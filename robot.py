@@ -173,7 +173,12 @@ class Robot:
         # TODO: TESTAR COM O BRAÇO
         pass
 
-    def align(self):
+    def align(self, color, velocidade):
         """Alinha com uma linha."""
-        # TODO: implementar
-        pass
+        self.lmotor.on(velocidade)
+        self.rmotor.on(velocidade)
+        while(self.rcolor.color() != color or self.lcolor.color() != color):
+            if self.lcolor.color() == color:
+                self.lmotor.stop(Stop.HOLD)
+            if self.rcolor.color() == color:
+                self.rmotor.stop(Stop.HOLD)
