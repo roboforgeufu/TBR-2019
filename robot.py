@@ -77,7 +77,7 @@ class Robot:
         self.rmotor.reset_angle(0)
 
         # P/ calibrar
-        K = 350
+        K = const.K
         grausMotor = K * grausCurva / 90
 
         mediaPercorrida = 0
@@ -177,8 +177,8 @@ class Robot:
         """Alinha com uma linha."""
         self.lmotor.run(velocidade)
         self.rmotor.run(velocidade)
-        while(self.rcolor.color() != color or self.lcolor.color() != color):
-            if self.lcolor.color() == color:
+        while(self.rcolor.reflection() > const.BLK_PCT or self.lcolor.color() > const.BLK_PCT):
+            if self.lcolor.reflection() <= const.BLK_PCT:
                 self.lmotor.stop(Stop.HOLD)
-            if self.rcolor.color() == color:
+            if self.rcolor.reflection() <= const.BLK_PCT:
                 self.rmotor.stop(Stop.HOLD)

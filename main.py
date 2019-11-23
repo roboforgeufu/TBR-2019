@@ -103,22 +103,30 @@ def get_first(robot):
     robot.align(Color.BLACK, 100)
 
     # Andar fixo
-    robot.walk(cFuncao=100, graus=420)
+    robot.walk(cFuncao=100, graus=690)
     robot.stop()
 
     # Curva
     robot.turn(aFuncao=0, bFuncao=0, cFuncao=30, grausCurva=90)
+    robot.stop()
+
+    # Andar fixo
+    robot.walk(cFuncao=100, graus=1300)
     robot.stop()
 
     # Andar/Alinhar com a linha do meio
     robot.align(Color.BLACK, 100)
 
+    robot.walk(cFuncao=80, graus=80)
+    robot.stop()
+
     # Curva
-    robot.turn(aFuncao=0, bFuncao=0, cFuncao=30, grausCurva=90)
+    robot.turn(aFuncao=0, bFuncao=0, cFuncao=-30, grausCurva=90)
     robot.stop()
 
     # Andar/Alinha com o quadrado vermelho
     robot.align(Color.BLACK, 100)
+    robot.stop()
 
 
 def deliver_first(robot):
@@ -140,6 +148,7 @@ def start_robot(corner):
     # test_gyro_turn(triton)
 
     get_first(triton)
+    deliver_first(triton)
 
     print("Goodbye...")
     wait(1000)
