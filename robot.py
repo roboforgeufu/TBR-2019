@@ -177,8 +177,8 @@ class Robot:
         """Alinha com uma linha."""
         self.lmotor.on(velocidade)
         self.rmotor.on(velocidade)
-        while(self.rcolor.color() != color or self.lcolor.color() != color):
-            if self.lcolor.color() == color:
+        while(self.rcolor.reflection() > BLK_PCT or self.lcolor.color() > BLC_PCT):
+            if self.lcolor.reflection() <= BLK_PCT:
                 self.lmotor.stop(Stop.HOLD)
-            if self.rcolor.color() == color:
+            if self.rcolor.reflection() <= BLK_PCT:
                 self.rmotor.stop(Stop.HOLD)
