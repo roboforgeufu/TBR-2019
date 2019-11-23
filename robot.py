@@ -17,10 +17,10 @@ class Robot:
         """Inicializa variáveis do robo."""
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
-        self.claw = Motor(clport)
-        self.arm = Motor(amport)
+        # self.claw = Motor(clport)
+        # self.arm = Motor(amport)
 
-        self.recog = ColorSensor(csport)
+        # self.recog = ColorSensor(csport)
         self.lcolor = ColorSensor(lcport)
         self.rcolor = ColorSensor(rcport)
         self.gyro = GyroSensor(gyport)
@@ -77,7 +77,7 @@ class Robot:
         self.rmotor.reset_angle(0)
 
         # P/ calibrar
-        K = 180
+        K = 350
         grausMotor = K * grausCurva / 90
 
         mediaPercorrida = 0
@@ -175,8 +175,8 @@ class Robot:
 
     def align(self, color, velocidade):
         """Alinha com uma linha."""
-        self.lmotor.on(velocidade)
-        self.rmotor.on(velocidade)
+        self.lmotor.run(velocidade)
+        self.rmotor.run(velocidade)
         while(self.rcolor.color() != color or self.lcolor.color() != color):
             if self.lcolor.color() == color:
                 self.lmotor.stop(Stop.HOLD)
