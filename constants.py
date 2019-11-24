@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from pybricks.parameters import Color
 
 """Constants file."""
 
@@ -20,5 +21,14 @@ RIGHT = 1
 NORTH = 0
 SOUTH = 1
 
-BLACK_CNR = 0
-BLUE_CNR = 1
+BLACK_CNR = Color.BLACK
+BLUE_CNR = Color.BLUE
+
+# Motors
+MOTOR_SP = 500
+
+# COLORS
+WHITE_PCT = 70
+BLK_PCT = 20
+
+K = 300

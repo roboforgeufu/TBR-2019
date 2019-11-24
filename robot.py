@@ -17,10 +17,10 @@ class Robot:
         """Inicializa variáveis do robo."""
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
-        self.claw = Motor(clport)
-        self.arm = Motor(amport)
+        # self.claw = Motor(clport)
+        # self.arm = Motor(amport)
 
-        self.recog = ColorSensor(csport)
+        # self.recog = ColorSensor(csport)
         self.lcolor = ColorSensor(lcport)
         self.rcolor = ColorSensor(rcport)
         self.gyro = GyroSensor(gyport)
@@ -34,7 +34,7 @@ class Robot:
         self.stopwatch = StopWatch()
         self.base = DriveBase(self.lmotor, self.rmotor, 56, 190)
 
-    def walk(self, aFuncao=0, bFuncao=0, cFuncao=0, graus=0, intervOscilacao=15, insideReset=True):
+    def walk(self, aFuncao=0, bFuncao=0, cFuncao=0, graus=0, intervOscilacao=0, insideReset=True):
         """Anda com o robo."""
         # TODO: Deixar velocidade constante.
         print("Walking...")
@@ -77,7 +77,7 @@ class Robot:
         self.rmotor.reset_angle(0)
 
         # P/ calibrar
-        K = 180
+        K = const.K
         grausMotor = K * grausCurva / 90
 
         mediaPercorrida = 0
@@ -173,12 +173,20 @@ class Robot:
         # TODO: TESTAR COM O BRAÇO
         pass
 
-    def align(self, color, velocidade):
+    def align(self, color = 0, velocidade = 100):
         """Alinha com uma linha."""
-        self.lmotor.on(velocidade)
-        self.rmotor.on(velocidade)
-        while(self.rcolor.reflection() > BLK_PCT or self.lcolor.color() > BLC_PCT):
-            if self.lcolor.reflection() <= BLK_PCT:
-                self.lmotor.stop(Stop.HOLD)
-            if self.rcolor.reflection() <= BLK_PCT:
-                self.rmotor.stop(Stop.HOLD)
+        self.lmotor.run(velocidade)
+        self.rmotor.run(velocidade)
+        if color == 0:
+            while(self.rcolor.reflection() > const.BLK_PCT or self.lcolor.reflection() > const.BLK_PCT):
+                if self.lcolor.reflection() <= const.BLK_PCT:
+                    self.lmotor.stop(Stop.HOLD)
+                if self.rcolor.reflection() <= const.BLK_PCT:
+                    self.rmotor.stop(Stop.HOLD)
+        else:
+            while(self.rcolor.color() != color or self.lcolor.color() != color):
+                if self.lcolor.color() == color:
+                    self.lmotor.stop(Stop.HOLD)
+                if self.rcolor.color() == color:
+                    self.rmotor.stop(Stop.HOLD)
+
