@@ -176,8 +176,11 @@ def start_robot(corner):
     # test_gyro_walk(triton)
     # test_gyro_turn(triton)
 
-    get_first(triton)
-    deliver_first(triton)
+    #get_first(triton)
+    #deliver_first(triton)
+
+    triton.align(velocidade = 600)
+    triton.stop()
 
     print("Goodbye...")
     wait(1000)

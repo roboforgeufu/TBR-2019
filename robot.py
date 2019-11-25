@@ -175,15 +175,44 @@ class Robot:
 
     def align(self, color = 0, velocidade = 100):
         """Alinha com uma linha."""
-        self.lmotor.run(velocidade)
-        self.rmotor.run(velocidade)
         if color == 0:
-            while(self.rcolor.reflection() > const.BLK_PCT or self.lcolor.reflection() > const.BLK_PCT):
-                if self.lcolor.reflection() <= const.BLK_PCT:
-                    self.lmotor.stop(Stop.HOLD)
-                if self.rcolor.reflection() <= const.BLK_PCT:
-                    self.rmotor.stop(Stop.HOLD)
+            # Alinha na linha preta
+            lstate = 0
+            rstate = 0
+            while not(lstate == 1 and rstate == 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
+                print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
+                print(rstate, lstate)
+                if rstate == 0:
+                    self.lmotor.run(velocidade)
+                    if self.rcolor.reflection() < const.BLK_PCT:
+                        rstate = 1
+                if lstate == 0:
+                    self.rmotor.run(velocidade)
+                    if self.lcolor.reflection() < const.BLK_PCT:
+                        lstate = 1
+                
+                if lstate == 1:
+                    if self.lcolor.reflection() > const.BLK_PCT + 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve branco
+                        self.lmotor.run(-velocidade/3)
+                    elif self.lcolor.reflection() < const.BLK_PCT - 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
+                        self.lmotor.run(velocidade/3)
+                    else:
+                        #Perfeitamente na borda
+                        self.lmotor.stop(Stop.HOLD)
+                if rstate == 1:
+                    if self.rcolor.reflection() > const.BLK_PCT + 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve branco
+                        self.rmotor.run(-velocidade/3)
+                    elif self.rcolor.reflection() < const.BLK_PCT - 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
+                        self.rmotor.run(velocidade/3)
+                    else:
+                        #Perfeitamente na borda
+                        self.rmotor.stop(Stop.HOLD)
         else:
+            # Alinha na linha da cor dada
             while(self.rcolor.color() != color or self.lcolor.color() != color):
                 if self.lcolor.color() == color:
                     self.lmotor.stop(Stop.HOLD)
