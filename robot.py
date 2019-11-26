@@ -183,7 +183,7 @@ class Robot:
             boolEsq = True
             while not(lstate >= 1 and rstate >= 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
                 #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
-                #print(rstate, lstate)
+                print(rstate, lstate)
 
                 """Estado 0 - Sensor ainda nao identificou a linha"""
                 if rstate == 0 and lstate == 0:
@@ -197,7 +197,7 @@ class Robot:
                     if velocDir > 900:
                         velocDir = 900
                     diferenca_EsqDir = abs(self.lmotor.angle()) - abs(self.rmotor.angle())
-                    print("Diferenca", diferenca_EsqDir)
+                    # print("Diferenca", diferenca_EsqDir)
                     if abs(diferenca_EsqDir) > 3:
                         if diferenca_EsqDir > 0:
                             # self.lmotor andou mais, joga mais velocidade no self.rmotor
@@ -215,18 +215,18 @@ class Robot:
                     self.rmotor.run(velocDir)
                 elif rstate == 0:
                     # Apenas o sensor esquerdo ainda nao viu a linha preta
-                    self.lmotor.run(velocidade)
+                    self.rmotor.run(velocidade)
                     if self.rcolor.reflection() < const.BLK_PCT:
                         rstate = 1
                 elif lstate == 0:
-                    self.rmotor.run(velocidade)
+                    self.lmotor.run(velocidade)
                     # Apenas o sensor direito ainda nao viu a linha preta
                     if self.lcolor.reflection() < const.BLK_PCT:
                         lstate = 1
                 
                 """Estado 1 - Sensor ja identificou a linha,
                 Diminuir erros de conservacao de momento
-                Se sameSide == False alinhar daquele lado da linha""""
+                Se sameSide == False alinhar daquele lado da linha"""
                 if lstate == 1:
                     if self.lcolor.reflection() > const.BLK_PCT + 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
@@ -235,7 +235,7 @@ class Robot:
                             velocEsq = velocEsq/2
                         self.lmotor.run(-velocEsq)
                     else:
-                        if sameSide and self.rcolor.reflection() < const.BLK_PCT:
+                        if sameSide and self.lcolor.reflection() < const.BLK_PCT:
                             # O robo deve voltar para o mesmo lado da linha em que se encontrava
                             # Ele identifica a linha e vai para o proximo estado
                             lstate = 2
