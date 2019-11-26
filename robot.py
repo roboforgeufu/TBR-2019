@@ -181,7 +181,7 @@ class Robot:
             rstate = 0
             boolDir = True
             boolEsq = True
-            while not(lstate == 1 and rstate == 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
+            while not(lstate >= 1 and rstate >= 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
                 #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
                 #print(rstate, lstate)
 
