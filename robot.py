@@ -181,7 +181,7 @@ class Robot:
             rstate = 0
             boolDir = True
             boolEsq = True
-            while not(lstate >= 1 and rstate >= 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
+            while not(lstate == 2 and rstate == 2 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
                 #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
                 print(rstate, lstate)
 
@@ -225,63 +225,38 @@ class Robot:
                         lstate = 1
                 
                 """Estado 1 - Sensor ja identificou a linha,
-                Diminuir erros de conservacao de momento
-                Se sameSide == False alinhar daquele lado da linha"""
-                if lstate == 1:
-                    if self.lcolor.reflection() > const.BLK_PCT + 10:
-                        # Se o sensor ja passou pelo preto, mas atualmente ve branco
-                        if boolEsq:
-                            boolEsq = False
-                            velocEsq = velocEsq/2
-                        self.lmotor.run(-velocEsq)
-                    else:
-                        if sameSide and self.lcolor.reflection() < const.BLK_PCT:
-                            # O robo deve voltar para o mesmo lado da linha em que se encontrava
-                            # Ele identifica a linha e vai para o proximo estado
-                            lstate = 2
-                            continue
-                        boolEsq = True
-                        if self.lcolor.reflection() < const.BLK_PCT - 10:
-                            # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
-                            self.lmotor.run(velocEsq)
-                        else:
-                            #Perfeitamente na borda
-                            self.lmotor.stop(Stop.HOLD)
-                if rstate == 1:
-                    if self.rcolor.reflection() > const.BLK_PCT + 10:
-                        # Se o sensor ja passou pelo preto, mas atualmente ve branco
-                        if boolDir:
-                            boolDir = False
-                            velocDir = velocDir/2
-                        self.rmotor.run(-velocDir)
-                    else:
-                        if sameSide and self.rcolor.reflection() < const.BLK_PCT:
-                            # O robo deve voltar para o mesmo lado da linha em que se encontrava
-                            # Ele identifica a linha e vai para o proximo estado
-                            rstate = 2
-                            continue
-                        boolDir = True
-                        if self.rcolor.reflection() < const.BLK_PCT - 10:
-                            # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
-                            self.rmotor.run(velocDir)
-                        else:
-                            #Perfeitamente na borda    
-                            self.rmotor.stop(Stop.HOLD)
-                
-                """Estado 2 - so entra nesse estado se sameSide == True
-                Vai alinhar o robo do mesmo lado que ele comecou com relacao
-                aa linha"""
+                Se sameSide == False pula pro proximo
+                Se sameSide == True re com o robo para alinhar do outro lado"""
+                if (lstate == 1 or rstate == 1) and sameSide:
+                    self.lmotor.reset_angle(0)
+                    while abs(self.lmotor.angle()) < 100:
+                        self.lmotor.run(-velocidade/2)
+                        self.rmotor.run(-velocidade/2)
+                    self.lmotor.stop(Stop.HOLD)
+                    self.rmotor.stop(Stop.HOLD)
+                    lstate = 2
+                    rstate = 2
+                elif(lstate == 1):
+                    lstate = 2
+                elif(rstate == 1):
+                    rstate = 2
+
+                """Estado 2 - Termina o alinhamento"""
+                if sameSide:
+                    multiplicador = 1
+                else:
+                    multiplicador = -1
                 if lstate == 2:
                     if self.lcolor.reflection() > const.BLK_PCT + 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
                         if boolEsq:
                             boolEsq = False
                             velocEsq = velocEsq/2
-                        self.lmotor.run(velocEsq)
+                        self.lmotor.run(multiplicador*velocEsq)
                     elif self.lcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
                         boolEsq = True
-                        self.lmotor.run(-velocEsq)
+                        self.lmotor.run(-1*multiplicador*velocEsq)
                     else:
                         #Perfeitamente na borda
                         boolEsq = True
@@ -292,11 +267,11 @@ class Robot:
                         if boolDir:
                             boolDir = False
                             velocDir = velocDir/2
-                        self.rmotor.run(velocDir)
+                        self.rmotor.run(multiplicador*velocDir)
                     elif self.rcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
                         boolDir = True
-                        self.rmotor.run(-velocDir)
+                        self.rmotor.run(-1*multiplicador*velocDir)
                     else:
                         #Perfeitamente na borda
                         boolDir = True
