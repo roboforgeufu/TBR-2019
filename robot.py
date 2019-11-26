@@ -173,7 +173,7 @@ class Robot:
         # TODO: TESTAR COM O BRAÇO
         pass
 
-    def align(self, color = 0, velocidade = 100, intervOscilacao = 0):
+    def align(self, color = 0, velocidade = 100, intervOscilacao = 0, sameSide = False):
         """Alinha com uma linha."""
         if color == 0:
             # Alinha na linha preta
@@ -184,6 +184,8 @@ class Robot:
             while not(lstate == 1 and rstate == 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
                 #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
                 #print(rstate, lstate)
+
+                """Estado 0 - Sensor ainda nao identificou a linha"""
                 if rstate == 0 and lstate == 0:
                     # Nesse ponto do codigo, nenhum dos sensores identificou uma linha preta
                     # O robo continua andando, equilibrando os dois motores para manter a linha reta
@@ -222,6 +224,9 @@ class Robot:
                     if self.lcolor.reflection() < const.BLK_PCT:
                         lstate = 1
                 
+                """Estado 1 - Sensor ja identificou a linha,
+                Diminuir erros de conservacao de momento
+                Se sameSide == False alinhar daquele lado da linha""""
                 if lstate == 1:
                     if self.lcolor.reflection() > const.BLK_PCT + 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
@@ -229,14 +234,19 @@ class Robot:
                             boolEsq = False
                             velocEsq = velocEsq/2
                         self.lmotor.run(-velocEsq)
-                    elif self.lcolor.reflection() < const.BLK_PCT - 10:
-                        # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
-                        boolEsq = True
-                        self.lmotor.run(velocEsq)
                     else:
-                        #Perfeitamente na borda
+                        if sameSide and self.rcolor.reflection() < const.BLK_PCT:
+                            # O robo deve voltar para o mesmo lado da linha em que se encontrava
+                            # Ele identifica a linha e vai para o proximo estado
+                            lstate = 2
+                            continue
                         boolEsq = True
-                        self.lmotor.stop(Stop.HOLD)
+                        if self.lcolor.reflection() < const.BLK_PCT - 10:
+                            # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
+                            self.lmotor.run(velocEsq)
+                        else:
+                            #Perfeitamente na borda
+                            self.lmotor.stop(Stop.HOLD)
                 if rstate == 1:
                     if self.rcolor.reflection() > const.BLK_PCT + 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
@@ -244,14 +254,54 @@ class Robot:
                             boolDir = False
                             velocDir = velocDir/2
                         self.rmotor.run(-velocDir)
+                    else:
+                        if sameSide and self.rcolor.reflection() < const.BLK_PCT:
+                            # O robo deve voltar para o mesmo lado da linha em que se encontrava
+                            # Ele identifica a linha e vai para o proximo estado
+                            rstate = 2
+                            continue
+                        boolDir = True
+                        if self.rcolor.reflection() < const.BLK_PCT - 10:
+                            # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
+                            self.rmotor.run(velocDir)
+                        else:
+                            #Perfeitamente na borda    
+                            self.rmotor.stop(Stop.HOLD)
+                
+                """Estado 2 - so entra nesse estado se sameSide == True
+                Vai alinhar o robo do mesmo lado que ele comecou com relacao
+                aa linha"""
+                if lstate == 2:
+                    if self.lcolor.reflection() > const.BLK_PCT + 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve branco
+                        if boolEsq:
+                            boolEsq = False
+                            velocEsq = velocEsq/2
+                        self.lmotor.run(velocEsq)
+                    elif self.lcolor.reflection() < const.BLK_PCT - 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
+                        boolEsq = True
+                        self.lmotor.run(-velocEsq)
+                    else:
+                        #Perfeitamente na borda
+                        boolEsq = True
+                        self.lmotor.stop(Stop.HOLD)
+                if rstate == 2:
+                    if self.rcolor.reflection() > const.BLK_PCT + 10:
+                        # Se o sensor ja passou pelo preto, mas atualmente ve branco
+                        if boolDir:
+                            boolDir = False
+                            velocDir = velocDir/2
+                        self.rmotor.run(velocDir)
                     elif self.rcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
                         boolDir = True
-                        self.rmotor.run(velocDir)
+                        self.rmotor.run(-velocDir)
                     else:
-                        #Perfeitamente na borda    
+                        #Perfeitamente na borda
                         boolDir = True
                         self.rmotor.stop(Stop.HOLD)
+
         else:
             # Alinha na linha da cor dada
             while(self.rcolor.color() != color or self.lcolor.color() != color):
@@ -259,4 +309,3 @@ class Robot:
                     self.lmotor.stop(Stop.HOLD)
                 if self.rcolor.color() == color:
                     self.rmotor.stop(Stop.HOLD)
-
