@@ -173,25 +173,52 @@ class Robot:
         # TODO: TESTAR COM O BRAÇO
         pass
 
-    def align(self, color = 0, velocidade = 100):
+    def align(self, color = 0, velocidade = 100, intervOscilacao = 0):
         """Alinha com uma linha."""
         if color == 0:
             # Alinha na linha preta
             lstate = 0
             rstate = 0
-            velocEsq = velocidade
-            velocDir = velocidade
             boolDir = True
             boolEsq = True
             while not(lstate == 1 and rstate == 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
-                print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
-                print(rstate, lstate)
-                if rstate == 0:
+                #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
+                #print(rstate, lstate)
+                if rstate == 0 and lstate == 0:
+                    # Nesse ponto do codigo, nenhum dos sensores identificou uma linha preta
+                    # O robo continua andando, equilibrando os dois motores para manter a linha reta
+                    # e sempre verificando os dois sensores
+                    velocDir = velocEsq = velocidade
+                    # Teto
+                    if velocEsq > 900:
+                        velocEsq = 900
+                    if velocDir > 900:
+                        velocDir = 900
+                    diferenca_EsqDir = abs(self.lmotor.angle()) - abs(self.rmotor.angle())
+                    print("Diferenca", diferenca_EsqDir)
+                    if abs(diferenca_EsqDir) > 3:
+                        if diferenca_EsqDir > 0:
+                            # self.lmotor andou mais, joga mais velocidade no self.rmotor
+                            velocEsq = velocEsq * (1 - (intervOscilacao / 100))
+                            velocDir = velocDir * (1 + (intervOscilacao / 100))
+                        else:
+                            # self.rmotor andou mais, joga mais velocidade no self.lmotor
+                            velocEsq = velocEsq * (1 + (intervOscilacao / 100))
+                            velocDir = velocDir * (1 - (intervOscilacao / 100))
+                    if self.rcolor.reflection() < const.BLK_PCT:
+                        rstate = 1
+                    if self.lcolor.reflection() < const.BLK_PCT:
+                        lstate = 1
+                    self.lmotor.run(velocEsq)
+                    self.rmotor.run(velocDir)
+                elif rstate == 0:
+                    # Apenas o sensor esquerdo ainda nao viu a linha preta
                     self.lmotor.run(velocidade)
                     if self.rcolor.reflection() < const.BLK_PCT:
                         rstate = 1
-                if lstate == 0:
+                elif lstate == 0:
                     self.rmotor.run(velocidade)
+                    # Apenas o sensor direito ainda nao viu a linha preta
                     if self.lcolor.reflection() < const.BLK_PCT:
                         lstate = 1
                 

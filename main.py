@@ -179,7 +179,7 @@ def start_robot(corner):
     #get_first(triton)
     #deliver_first(triton)
 
-    triton.align(velocidade = 600)
+    triton.align(velocidade = 900, intervOscilacao=8)
     triton.stop()
 
     print("Goodbye...")
