@@ -179,6 +179,10 @@ class Robot:
             # Alinha na linha preta
             lstate = 0
             rstate = 0
+            velocEsq = velocidade
+            velocDir = velocidade
+            boolDir = True
+            boolEsq = True
             while not(lstate == 1 and rstate == 1 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
                 print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
                 print(rstate, lstate)
@@ -194,22 +198,32 @@ class Robot:
                 if lstate == 1:
                     if self.lcolor.reflection() > const.BLK_PCT + 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
-                        self.lmotor.run(-velocidade/3)
+                        if boolEsq:
+                            boolEsq = False
+                            velocEsq = velocEsq/2
+                        self.lmotor.run(-velocEsq)
                     elif self.lcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
-                        self.lmotor.run(velocidade/3)
+                        boolEsq = True
+                        self.lmotor.run(velocEsq)
                     else:
                         #Perfeitamente na borda
+                        boolEsq = True
                         self.lmotor.stop(Stop.HOLD)
                 if rstate == 1:
                     if self.rcolor.reflection() > const.BLK_PCT + 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
-                        self.rmotor.run(-velocidade/3)
+                        if boolDir:
+                            boolDir = False
+                            velocDir = velocDir/2
+                        self.rmotor.run(-velocDir)
                     elif self.rcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
-                        self.rmotor.run(velocidade/3)
+                        boolDir = True
+                        self.rmotor.run(velocDir)
                     else:
-                        #Perfeitamente na borda
+                        #Perfeitamente na borda    
+                        boolDir = True
                         self.rmotor.stop(Stop.HOLD)
         else:
             # Alinha na linha da cor dada
