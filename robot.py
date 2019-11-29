@@ -2,7 +2,7 @@
 
 """Robot module."""
 
-from pybricks.ev3devices import Motor, ColorSensor, GyroSensor
+from pybricks.ev3devices import Motor, ColorSensor, GyroSensor, InfraredSensor, UltrasonicSensor
 from pybricks.tools import wait, print, StopWatch
 from pybricks.parameters import Stop
 from pybricks.robotics import DriveBase
@@ -13,17 +13,17 @@ import constants as const
 class Robot:
     """Classe do robo."""
 
-    def __init__(self, lmport, rmport, clport, amport, csport, lcport, rcport, gyport, corner):
+    def __init__(self, lmport, rmport, clport, amport, csport, lcport, rcport, infraport, corner):
         """Inicializa variáveis do robo."""
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
-        # self.claw = Motor(clport)
+        self.claw = Motor(clport)
         # self.arm = Motor(amport)
 
-        # self.recog = ColorSensor(csport)
+        self.central = ColorSensor(csport)
         self.lcolor = ColorSensor(lcport)
         self.rcolor = ColorSensor(rcport)
-        self.gyro = GyroSensor(gyport)
+        self.infra = InfraredSensor(infraport)
 
         self.map = [[const.UNK] * 4, [const.UNK] * 4]
         self.side = const.LEFT
@@ -168,13 +168,11 @@ class Robot:
         self.lmotor.stop(Stop.BRAKE)
         self.rmotor.stop(Stop.BRAKE)
 
-    def check_block(self):
-        """Verifica um bloco. Tamanho e cor."""
-        # TODO: TESTAR COM O BRAÇO
-        pass
-
     def align(self, color = 0, velocidade = 100, intervOscilacao = 0, sameSide = False):
         """Alinha com uma linha."""
+        print("Aligning...")
+        self.lmotor.reset_angle(0)
+        self.rmotor.reset_angle(0)
         if color == 0:
             # Alinha na linha preta
             lstate = 0
@@ -182,8 +180,8 @@ class Robot:
             boolDir = True
             boolEsq = True
             while not(lstate == 2 and rstate == 2 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
-                #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
-                print(rstate, lstate)
+                # print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
+                # print(rstate, lstate)
 
                 """Estado 0 - Sensor ainda nao identificou a linha"""
                 if rstate == 0 and lstate == 0:
@@ -208,8 +206,10 @@ class Robot:
                             velocEsq = velocEsq * (1 + (intervOscilacao / 100))
                             velocDir = velocDir * (1 - (intervOscilacao / 100))
                     if self.rcolor.reflection() < const.BLK_PCT:
+                        self.rmotor.stop(Stop.HOLD)
                         rstate = 1
                     if self.lcolor.reflection() < const.BLK_PCT:
+                        self.lmotor.stop(Stop.HOLD)
                         lstate = 1
                     self.lmotor.run(velocEsq)
                     self.rmotor.run(velocDir)
@@ -217,11 +217,13 @@ class Robot:
                     # Apenas o sensor esquerdo ainda nao viu a linha preta
                     self.rmotor.run(velocidade)
                     if self.rcolor.reflection() < const.BLK_PCT:
+                        self.rmotor.stop(Stop.HOLD)
                         rstate = 1
                 elif lstate == 0:
                     self.lmotor.run(velocidade)
                     # Apenas o sensor direito ainda nao viu a linha preta
                     if self.lcolor.reflection() < const.BLK_PCT:
+                        self.lmotor.stop(Stop.HOLD)
                         lstate = 1
                 
                 """Estado 1 - Sensor ja identificou a linha,
@@ -276,6 +278,7 @@ class Robot:
                         #Perfeitamente na borda
                         boolDir = True
                         self.rmotor.stop(Stop.HOLD)
+            self.stop()
 
         else:
             # Alinha na linha da cor dada
@@ -284,3 +287,29 @@ class Robot:
                     self.lmotor.stop(Stop.HOLD)
                 if self.rcolor.color() == color:
                     self.rmotor.stop(Stop.HOLD)
+    
+    def equilib(self, velocidade = 500, intervOscilacao = 8):
+        # print("Equilibrando...")
+        velocDir = velocEsq = velocidade
+        # Teto
+        if velocEsq > 900:
+            velocEsq = 900
+        if velocDir > 900:
+            velocDir = 900
+        diferenca_EsqDir = abs(self.lmotor.angle()) - abs(self.rmotor.angle())
+        # print("Diferenca", diferenca_EsqDir)
+        if abs(diferenca_EsqDir) > 3:
+            if diferenca_EsqDir > 0:
+                # self.lmotor andou mais, joga mais velocidade no self.rmotor
+                velocEsq = velocEsq * (1 - (intervOscilacao / 100))
+                velocDir = velocDir * (1 + (intervOscilacao / 100))
+            else:
+                # self.rmotor andou mais, joga mais velocidade no self.lmotor
+                velocEsq = velocEsq * (1 + (intervOscilacao / 100))
+                velocDir = velocDir * (1 - (intervOscilacao / 100))
+        self.lmotor.run(velocEsq)
+        self.rmotor.run(velocDir)
+    
+    def resetMotors(self):
+        self.lmotor.reset_angle(0)
+        self.rmotor.reset_angle(0)

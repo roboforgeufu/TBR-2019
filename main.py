@@ -9,7 +9,7 @@ import time
 import signal
 
 from pybricks import ev3brick as brick
-from pybricks.parameters import Button, Port, Color
+from pybricks.parameters import Button, Port, Color, Stop
 from pybricks.tools import print, wait
 
 import constants as const
@@ -73,10 +73,22 @@ def test_gyro_turn(robot):
 
 
 # Funções
-def seek_block():
-    """Segue em linha reta até perceber a presença de um bloco."""
-    # TODO: implementar
-
+def seek_block(robot):
+    """Segue em linha reta até perceber a presença de um bloco grande."""
+    print("Checking...")
+    robot.resetMotors()
+    identificado = False
+    while not identificado:
+        print(robot.infra.distance())
+        robot.align(velocidade=500, intervOscilacao=8)
+        robot.resetMotors()
+        while robot.lmotor.angle() < 300:
+            robot.equilib(velocidade=100)
+            print(robot.infra.distance())
+            if robot.infra.distance() < 10:
+                identificado = True
+                robot.stop()
+                break
 
 def change_sides():
     """Atravessa o campo."""
@@ -167,7 +179,7 @@ def start_robot(corner):
     """Instacia a classe, começa o desafio."""
     print("Starting...")
 
-    triton = Robot(lmport = Port.A, rmport = Port.C, clport = Port.B, amport = Port.D, csport = Port.S1, lcport = Port.S2, rcport = Port.S3, gyport = Port.S4, corner = corner)
+    triton = Robot(lmport = Port.A, rmport = Port.C, clport = Port.B, amport = Port.D, csport = Port.S1, lcport = Port.S2, rcport = Port.S3, infraport = Port.S4, corner = corner)
 
     # Tests.
     # test_catch(triton)
@@ -179,8 +191,9 @@ def start_robot(corner):
     #get_first(triton)
     #deliver_first(triton)
 
-    triton.align(velocidade = 900, intervOscilacao=8, sameSide=True)
-    triton.stop()
+    triton.claw.run(5)
+    #seek_block(triton)
+    #triton.align(velocidade=-500)
 
     print("Goodbye...")
     wait(1000)
