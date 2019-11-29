@@ -4,8 +4,10 @@ from pybricks.parameters import Color
 """Constants file."""
 
 # Claw
-CLAW_SP = 500
-CLAW_WT = 1000
+CLAWSP_UP = 1000
+CLAWSP_DN = -300
+CLAWDG_DN = 950
+CLAW_DTY_LIM = 30
 
 # Map
 BIG_BLK = 0
@@ -30,5 +32,15 @@ MOTOR_SP = 500
 # COLORS
 WHITE_PCT = 70
 BLK_PCT = 35
+RED = 5
+BLACK = 1
+BLUE = 2
 
-K = 300
+#TURN
+K = 230
+
+BCK_SEEN = -120
+REV_CATCH = -210
+FWD_CATCH = 80
+
+GREEN_CLOSE = 10
