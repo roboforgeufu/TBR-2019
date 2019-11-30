@@ -159,17 +159,24 @@ class Robot:
         """Pega/Solta o bloco."""
         if release:
             print("Going down...")
-            self.claw.run_angle(const.CLAWSP_DN, const.CLAWDG_DN *(1/3))
-            self.claw.run_angle(const.CLAWSP_DN-300, const.CLAWDG_DN*(2/3), Stop.HOLD)
+            self.claw.reset_angle(0)
+            while self.claw.angle() > const.CLAWDG_DN:
+                #print(self.claw.angle())
+                if self.claw.angle() > const.CLAWDG_DN/8:
+                    self.claw.run(const.CLAWSP_DN)
+                else:
+                    self.claw.run(const.CLAWSP_DN -900)
+            self.claw.stop(Stop.HOLD)
         else:
             print("Going up...")
             self.claw.run_until_stalled(const.CLAWSP_UP, Stop.HOLD, const.CLAW_DTY_LIM)
+            self.claw.set_dc_settings(100, 0)
 
-    def stop(self):
+    def stop(self, stop_type = Stop.BRAKE):
         """Para os motores."""
         print("Stoping...")
-        self.lmotor.stop(Stop.BRAKE)
-        self.rmotor.stop(Stop.BRAKE)
+        self.lmotor.stop(stop_type)
+        self.rmotor.stop(stop_type)
 
     def align(self, color = 0, velocidade = 100, intervOscilacao = 0, sameSide = False):
         """Alinha com uma linha."""

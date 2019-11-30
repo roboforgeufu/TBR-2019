@@ -92,7 +92,7 @@ def seek_block(robot):
     robot.central.ambient()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
-    robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=95)
+    robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=98)
     robot.stop()
     robot.resetMotors()
     while robot.central.rgb()[1] < const.GREEN_CLOSE:
@@ -118,9 +118,13 @@ def change_sides():
     # TODO: implementar
 
 
-def deliver():
+def deliver(robot):
     """Faz a entrega do bloco."""
-    # TODO: implementar
+    # VERSAO DE TESTE
+    robot.align(velocidade=100)
+    robot.catch(release=True)
+    robot.walk(cFuncao=-30, graus=-200)
+    robot.stop()
 
 
 def goto_base():
@@ -138,7 +142,7 @@ def get_first(robot):
     robot.align(velocidade=100)
 
     # Andar fixo
-    robot.walk(cFuncao=40, graus=690, intervOscilacao=8)
+    robot.walk(cFuncao=40, graus=490, intervOscilacao=8)
     robot.stop()
 
     # Curva
@@ -146,13 +150,13 @@ def get_first(robot):
     robot.stop()
 
     # Andar fixo
-    robot.walk(cFuncao=40, graus=1300, intervOscilacao=8)
+    robot.walk(cFuncao=40, graus=1100, intervOscilacao=8)
     robot.stop()
 
     # Andar/Alinhar com a linha do meio
     robot.align(velocidade=100)
 
-    robot.walk(cFuncao=40, graus=60, intervOscilacao=8)
+    robot.walk(cFuncao=40, graus=30, intervOscilacao=8)
     robot.stop()
 
     # Curva
@@ -161,55 +165,45 @@ def get_first(robot):
 
     # Andar/Alinha com o quadrado vermelho
     robot.align(velocidade=200)
-    robot.align(Color.RED, 100)
-
-    # Manobra para ler a cor do bloco
-    robot.walk(cFuncao=-40, graus=-100, intervOscilacao=8)
-    robot.turn(aFuncao=0, bFuncao=0, cFuncao=30, grausCurva=90)
-    
-    wait(1000)
-    
-    # Manobra pra pegar o bloco
-    robot.turn(aFuncao=0, bFuncao=0, cFuncao=-30, grausCurva=90)
-    robot.walk(cFuncao=40, graus=100, intervOscilacao=8)
-    robot.stop()
 
     #Programe a garra aqui
+    robot.walk(cFuncao=40, graus=30, intervOscilacao=8)
 
-    ValorLido = Color.BLACK
+    ValorLido = Color.BLUE
     # Entrega
     if robot.corner == ValorLido:
         # Se move pra tras
         robot.walk(cFuncao=40, graus=100, intervOscilacao=8)
         robot.turn(aFuncao=0, bFuncao=0, cFuncao=-30, grausCurva=180)
         robot.align(velocidade=200)
-        robot.walk(cFuncao=40, graus=1000)
+        robot.walk(cFuncao=40, graus=800)
         robot.align(velocidade=200)
         robot.stop()
     else:
         # Se move pra frente
         robot.align(velocidade=200)
-        robot.walk(cFuncao=40, graus=1000)
+        robot.walk(cFuncao=40, graus=800)
         robot.align(velocidade=100)
         robot.stop()
 
-def deliver_first(robot):
-    """Entrega o primeiro cubo."""
-    pass
-
 def get_deliver(robot):
     """Pega um cubo do canto e entrega"""
+    """PROGRAMA DE TESTES PARA
+    corner azul
+    segundo bloco azul
+    """
     corLida = seek_block(robot)
     if corLida != const.RED:
         n_re = 1 #Valor multiplicador para o robo ir de re ate ficar na direcao do deposito
         robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=n_re*-450)
         if corLida == robot.corner:
             robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+            robot.align(velocidade=300)
+            robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=8, insideReset=True)
+            robot.stop(stop_type=Stop.HOLD)
         else:
             robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
-        robot.stop()
-        robot.align(velocidade=-300)
-
+        deliver(robot)
 
 # Main
 def start_robot(corner):
@@ -227,16 +221,11 @@ def start_robot(corner):
     # test_gyro_walk(triton)
     # test_gyro_turn(triton)
 
-    # get_first(triton)
+    get_first(triton)
     # deliver_first(triton)
 
-    # get_deliver(triton)
+    # get_deliver(triton)      
 
-    triton.align(velocidade=100)
-    triton.catch(release=True)
-    triton.walk(cFuncao=-30, graus=-200)
-    triton.stop()
-    
     print("Goodbye...")
     wait(1000)
 
