@@ -210,24 +210,20 @@ class Robot:
                             velocDir = velocDir * (1 - (intervOscilacao / 100))
                     if self.rcolor.reflection() < const.BLK_PCT +10:
                         rstate = 1
-                        continue
                     if self.lcolor.reflection() < const.BLK_PCT +10:
                         lstate = 1
-                        continue
                     self.lmotor.run(velocEsq)
                     self.rmotor.run(velocDir)
                 elif rstate == 0:
                     # Apenas o sensor esquerdo ainda nao viu a linha preta
+                    self.rmotor.run(velocidade)
                     if self.rcolor.reflection() < const.BLK_PCT +10:
                         rstate = 1
-                        continue
-                    self.rmotor.run(velocidade)
                 elif lstate == 0:
                     # Apenas o sensor direito ainda nao viu a linha preta
+                    self.lmotor.run(velocidade)
                     if self.lcolor.reflection() < const.BLK_PCT +10:
                         lstate = 1
-                        continue
-                    self.lmotor.run(velocidade)
                 
                 """Estado 1 - Sensor ja identificou a linha,
                 Se sameSide == False pula pro proximo
@@ -241,13 +237,10 @@ class Robot:
                     self.rmotor.stop(Stop.HOLD)
                     lstate = 2
                     rstate = 2
-                    continue
                 elif(lstate == 1):
                     lstate = 2
-                    continue
                 elif(rstate == 1):
                     rstate = 2
-                    continue
 
                 """Estado 2 - Termina o alinhamento"""
                 if sameSide:
@@ -259,7 +252,7 @@ class Robot:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
                         if boolEsq:
                             boolEsq = False
-                            velocEsq = velocEsq/3
+                            velocEsq = velocEsq/2
                         self.lmotor.run(multiplicador*velocEsq)
                     elif self.lcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
@@ -274,7 +267,7 @@ class Robot:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
                         if boolDir:
                             boolDir = False
-                            velocDir = velocDir/3
+                            velocDir = velocDir/2
                         self.rmotor.run(multiplicador*velocDir)
                     elif self.rcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
