@@ -80,7 +80,7 @@ def seek_block(robot):
     identificado = False
     while not identificado:
         print(robot.infra.distance())
-        robot.align(velocidade=500, intervOscilacao=8)
+        robot.align(velocidade=200, intervOscilacao=8)
         robot.resetMotors()
         while robot.lmotor.angle() < 300:
             robot.equilib(velocidade=100)
@@ -92,7 +92,7 @@ def seek_block(robot):
     robot.central.ambient()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
-    robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=92)
+    robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=95)
     robot.stop()
     robot.resetMotors()
     while robot.central.rgb()[1] < const.GREEN_CLOSE:
@@ -204,9 +204,9 @@ def get_deliver(robot):
         n_re = 1 #Valor multiplicador para o robo ir de re ate ficar na direcao do deposito
         robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=n_re*-450)
         if corLida == robot.corner:
-            robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
-        else:
             robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+        else:
+            robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
         robot.stop()
         robot.align(velocidade=-300)
 
@@ -230,9 +230,12 @@ def start_robot(corner):
     # get_first(triton)
     # deliver_first(triton)
 
-    #get_deliver(triton)]
+    # get_deliver(triton)
 
-    triton.align(velocidade = 600, intervOscilacao=8)
+    triton.align(velocidade=100)
+    triton.catch(release=True)
+    triton.walk(cFuncao=-30, graus=-200)
+    triton.stop()
     
     print("Goodbye...")
     wait(1000)

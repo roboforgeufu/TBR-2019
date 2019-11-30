@@ -5,8 +5,8 @@ from pybricks.parameters import Color
 
 # Claw
 CLAWSP_UP = 1000
-CLAWSP_DN = -300
-CLAWDG_DN = 950
+CLAWSP_DN = -200
+CLAWDG_DN = 850
 CLAW_DTY_LIM = 30
 
 # Map

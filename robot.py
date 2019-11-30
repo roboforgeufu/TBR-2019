@@ -159,7 +159,8 @@ class Robot:
         """Pega/Solta o bloco."""
         if release:
             print("Going down...")
-            self.claw.run_angle(const.CLAWSP_DN, const.CLAWDG_DN, Stop.HOLD)
+            self.claw.run_angle(const.CLAWSP_DN, const.CLAWDG_DN *(1/3))
+            self.claw.run_angle(const.CLAWSP_DN-300, const.CLAWDG_DN*(2/3), Stop.HOLD)
         else:
             print("Going up...")
             self.claw.run_until_stalled(const.CLAWSP_UP, Stop.HOLD, const.CLAW_DTY_LIM)
@@ -240,8 +241,10 @@ class Robot:
                     lstate = 2
                     rstate = 2
                 elif(lstate == 1):
+                    self.lmotor.stop(Stop.BRAKE)
                     lstate = 2
                 elif(rstate == 1):
+                    self.rmotor.stop(Stop.BRAKE)
                     rstate = 2
 
                 """Estado 2 - Termina o alinhamento"""
