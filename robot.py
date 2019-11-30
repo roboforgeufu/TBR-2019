@@ -175,6 +175,8 @@ class Robot:
         print("Aligning...")
         self.lmotor.reset_angle(0)
         self.rmotor.reset_angle(0)
+        self.lmotor.set_dc_settings(100, 0)
+        self.rmotor.set_dc_settings(100, 0)
         if color == 0:
             # Alinha na linha preta
             lstate = 0
@@ -208,21 +210,21 @@ class Robot:
                             # self.rmotor andou mais, joga mais velocidade no self.lmotor
                             velocEsq = velocEsq * (1 + (intervOscilacao / 100))
                             velocDir = velocDir * (1 - (intervOscilacao / 100))
-                    if self.rcolor.reflection() < const.BLK_PCT +10:
+                    if self.rcolor.reflection() < const.BLK_PCT:
                         rstate = 1
-                    if self.lcolor.reflection() < const.BLK_PCT +10:
+                    if self.lcolor.reflection() < const.BLK_PCT:
                         lstate = 1
                     self.lmotor.run(velocEsq)
                     self.rmotor.run(velocDir)
                 elif rstate == 0:
                     # Apenas o sensor esquerdo ainda nao viu a linha preta
                     self.rmotor.run(velocidade)
-                    if self.rcolor.reflection() < const.BLK_PCT +10:
+                    if self.rcolor.reflection() < const.BLK_PCT:
                         rstate = 1
                 elif lstate == 0:
                     # Apenas o sensor direito ainda nao viu a linha preta
                     self.lmotor.run(velocidade)
-                    if self.lcolor.reflection() < const.BLK_PCT +10:
+                    if self.lcolor.reflection() < const.BLK_PCT:
                         lstate = 1
                 
                 """Estado 1 - Sensor ja identificou a linha,

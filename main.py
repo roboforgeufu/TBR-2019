@@ -232,7 +232,7 @@ def start_robot(corner):
 
     #get_deliver(triton)]
 
-    triton.align(velocidade = 600, intervOscilacao=9)
+    triton.align(velocidade = 600, intervOscilacao=8)
     
     print("Goodbye...")
     wait(1000)
