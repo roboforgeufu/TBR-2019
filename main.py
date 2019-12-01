@@ -1,5 +1,5 @@
-#!/usr/bin/env pybricks-micropython
-# -*- coding: utf-8 -*-
+#!/usr/bin/ pybricks-micropython
+# # -*- coding: utf-8 -*-
 
 """Main module."""
 
@@ -76,24 +76,54 @@ def test_gyro_turn(robot):
 def seek_block(robot):
     """Segue em linha reta até perceber a presença de um bloco grande."""
     print("Checking...")
+    motor_angle = 0
     robot.resetMotors()
     identificado = False
     while not identificado:
         print(robot.infra.distance())
-        robot.align(velocidade=200, intervOscilacao=8)
+        robot.align(vInicial=200, intervOscilacao=8)
+        motor_angle +=  robot.lmotor.angle()
         robot.resetMotors()
-        while robot.lmotor.angle() < 300:
+        while robot.lmotor.angle() < 200:
             robot.equilib(velocidade=100)
             print(robot.infra.distance())
             if robot.infra.distance() < 10:
                 identificado = True
                 robot.stop()
                 break
-    robot.central.ambient()
+    motor_angle += robot.lmotor.angle()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
     robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=98)
     robot.stop()
+    
+    print("MotorAngle =", motor_angle)
+    if motor_angle < 400:
+        #Parou no primeiro cubo
+        return 1
+    elif motor_angle < 800:
+        #Parou no segundo cubo
+        return 2
+    else:
+        #Parou no terceiro cubo
+        return 3
+
+def change_sides():
+    """Atravessa o campo."""
+    # TODO: implementar
+
+
+def deliver(robot):
+    """Faz a entrega do bloco."""
+    # VERSAO DE TESTE
+    robot.align(vInicial=200)
+    robot.stop()
+    robot.catch(release=True)
+    robot.walk(cFuncao=-30, graus=-100)
+    robot.stop()
+
+def get_block(robot):
+    """Se aproxima do bloco, le a cor, pega com a garra"""
     robot.resetMotors()
     while robot.central.rgb()[1] < const.GREEN_CLOSE:
         robot.equilib(velocidade=150, intervOscilacao=8)
@@ -112,21 +142,6 @@ def seek_block(robot):
     else:
         return const.BLACK
 
-
-def change_sides():
-    """Atravessa o campo."""
-    # TODO: implementar
-
-
-def deliver(robot):
-    """Faz a entrega do bloco."""
-    # VERSAO DE TESTE
-    robot.align(velocidade=100)
-    robot.catch(release=True)
-    robot.walk(cFuncao=-30, graus=-200)
-    robot.stop()
-
-
 def goto_base():
     """Retorna para a base."""
     # TODO: implementar
@@ -135,56 +150,59 @@ def goto_base():
 
 def get_first(robot):
     """Função inicial. Coleta o primeiro bloco no centro do campo."""
-    # TODO: implementar
-    # FIXME: ALTA PRIORIDADE
+    # TODO: Melhorar funcoes das linhas retas e das curvas
 
     # Andar/Alinhar com a base
-    robot.align(velocidade=100)
+    robot.align()
 
+    robot.turn(aFuncao=0, bFuncao=-0.5, cFuncao=90, grausCurva=45)
+    
     # Andar fixo
-    robot.walk(cFuncao=40, graus=490, intervOscilacao=8)
+    robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=60, graus=570, intervOscilacao=8)
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=0, bFuncao=0, cFuncao=30, grausCurva=90)
+    robot.turn(aFuncao=0, bFuncao=-0.5, cFuncao=80, grausCurva=45)
     robot.stop()
 
     # Andar fixo
-    robot.walk(cFuncao=40, graus=1100, intervOscilacao=8)
+    robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=60, graus=700, intervOscilacao=8)
     robot.stop()
 
     # Andar/Alinhar com a linha do meio
-    robot.align(velocidade=100)
-
-    robot.walk(cFuncao=40, graus=30, intervOscilacao=8)
+    robot.align(vInicial=300)
+    robot.stop()
+    robot.walk(bFuncao = -0.1, cFuncao=30, graus=15, intervOscilacao=8)
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=0, bFuncao=0, cFuncao=-30, grausCurva=90)
+    robot.turn(aFuncao=0, bFuncao=0.5, cFuncao=-70, grausCurva=90, fix=False)
     robot.stop()
 
-    # Andar/Alinha com o quadrado vermelho
-    robot.align(velocidade=200)
+    # Andar/Alinha
+    robot.align(vInicial=300)
+    robot.stop(Stop.HOLD)
 
-    #Programe a garra aqui
-    robot.walk(cFuncao=40, graus=30, intervOscilacao=8)
+    #Pega o bloco
+    corLida = get_block(robot)
 
-    ValorLido = Color.BLUE
     # Entrega
-    if robot.corner == ValorLido:
+    if robot.corner == corLida:
         # Se move pra tras
-        robot.walk(cFuncao=40, graus=100, intervOscilacao=8)
-        robot.turn(aFuncao=0, bFuncao=0, cFuncao=-30, grausCurva=180)
-        robot.align(velocidade=200)
-        robot.walk(cFuncao=40, graus=800)
-        robot.align(velocidade=200)
-        robot.stop()
+        robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=60, graus=100, intervOscilacao=8)
+        robot.turn(aFuncao=0, bFuncao=0.5, cFuncao=-80, grausCurva=180, fix = False)
+        robot.align(vInicial=300)
+        robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=40, graus=const.MEIO_PEQUENO)
     else:
         # Se move pra frente
-        robot.align(velocidade=200)
-        robot.walk(cFuncao=40, graus=800)
-        robot.align(velocidade=100)
-        robot.stop()
+        robot.align(vInicial=300)
+        robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=40, graus=const.MEIO_PEQUENO)
+    robot.stop(Stop.HOLD)
+    deliver(robot)
+    robot.claw.reset_angle(0)
+    while robot.claw.angle() < abs(const.CLAWDG_DN*0.95):
+        robot.claw.run(900)
+    robot.catch()
 
 def get_deliver(robot):
     """Pega um cubo do canto e entrega"""
@@ -192,10 +210,27 @@ def get_deliver(robot):
     corner azul
     segundo bloco azul
     """
-    corLida = seek_block(robot)
+    blocoParada = seek_block(robot)
+    corLida = get_block(robot)
     if corLida != const.RED:
+        # TODO: Cacular o tamanho da re baseado nos depositos ocupados
+        
         n_re = 1 #Valor multiplicador para o robo ir de re ate ficar na direcao do deposito
-        robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=n_re*-450)
+        robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=n_re*const.BACK_DEPOSIT)
+        if blocoParada == 1:
+            if robot.corner == corLida:
+                robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+                robot.align(vInicial=-300, vPosterior=-100)
+                robot.walk(cFuncao=300, graus= const.MEIO_PEQUENO, intervOscilacao=8, insideReset=True)
+                robot.stop(stop_type=Stop.HOLD)
+            else:
+                robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+                robot.align(vInicial=-300, vPosterior=-100)
+                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=8, insideReset=True)
+                robot.stop(stop_type=Stop.HOLD) 
+        else:
+            print("Nada ainda...")
+        """
         if corLida == robot.corner:
             robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
             robot.align(velocidade=300)
@@ -203,7 +238,11 @@ def get_deliver(robot):
             robot.stop(stop_type=Stop.HOLD)
         else:
             robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+        """
         deliver(robot)
+    else:
+        #TODO: implementar entrega do vermelho
+        print("Nada ainda...")
 
 # Main
 def start_robot(corner):
@@ -221,10 +260,9 @@ def start_robot(corner):
     # test_gyro_walk(triton)
     # test_gyro_turn(triton)
 
-    get_first(triton)
-    # deliver_first(triton)
+    # get_first(triton)
 
-    # get_deliver(triton)      
+    get_deliver(triton)
 
     print("Goodbye...")
     wait(1000)
