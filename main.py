@@ -80,7 +80,7 @@ def seek_block(robot):
     robot.resetMotors()
     identificado = False
     while not identificado:
-        print(robot.infra.distance())
+        # print(robot.infra.distance())
         robot.align(vInicial=200, intervOscilacao=8)
         motor_angle +=  robot.lmotor.angle()
         robot.resetMotors()
@@ -199,17 +199,11 @@ def get_first(robot):
         robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=40, graus=const.MEIO_PEQUENO)
     robot.stop(Stop.HOLD)
     deliver(robot)
-    robot.claw.reset_angle(0)
-    while robot.claw.angle() < abs(const.CLAWDG_DN*0.95):
-        robot.claw.run(900)
-    robot.catch()
+    robot.fast_catch()
 
 def get_deliver(robot):
     """Pega um cubo do canto e entrega"""
-    """PROGRAMA DE TESTES PARA
-    corner azul
-    segundo bloco azul
-    """
+
     blocoParada = seek_block(robot)
     corLida = get_block(robot)
     if corLida != const.RED:
@@ -217,42 +211,72 @@ def get_deliver(robot):
         
         n_re = 1 #Valor multiplicador para o robo ir de re ate ficar na direcao do deposito
         robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=n_re*const.BACK_DEPOSIT)
+        
         if blocoParada == 1:
             if robot.corner == corLida:
+                print("CASO 1")
                 robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
                 robot.walk(cFuncao=300, graus= const.MEIO_PEQUENO, intervOscilacao=8, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
+                print("CASO 2")
                 robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=8, insideReset=True)
+                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=15, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD) 
+        elif blocoParada == 2:
+            if robot.corner == corLida:
+                print("CASO 3")
+                robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+                robot.align(vInicial=-300, vPosterior=-100)
+                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=15, insideReset=True)
+                robot.stop(stop_type=Stop.HOLD)
+            else:
+                print("CASO 4")
+                robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+                robot.align(vInicial=-300, vPosterior=-100)
+                robot.walk(cFuncao=300, graus= const.MEIO_PEQUENO, intervOscilacao=15, insideReset=True)
+                robot.stop(stop_type=Stop.HOLD)
         else:
-            print("Nada ainda...")
-        """
-        if corLida == robot.corner:
-            robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
-            robot.align(velocidade=300)
-            robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=8, insideReset=True)
-            robot.stop(stop_type=Stop.HOLD)
-        else:
-            robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
-        """
+            if robot.corner == corLida:
+                print("CASO 5")
+                robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+                robot.align(vInicial=300, vPosterior=100)
+                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=15, insideReset=True)
+                robot.stop(stop_type=Stop.HOLD)
+            else:
+                print("CASO 6")
+                robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+        
+        robot.stop(Stop.HOLD)
         deliver(robot)
+        robot.fast_catch()
+
     else:
         #TODO: implementar entrega do vermelho
         print("Nada ainda...")
 
+def leave_base(robot):
+    robot.align()
+    robot.lmotor.reset_angle(0)
+    while robot.lmotor.angle() < 500:
+        robot.lmotor.run(800)
+        robot.rmotor.run(200)
+    while robot.lmotor.angle() < 550:
+        robot.equilib()
+    robot.rmotor.reset_angle(0)
+    while robot.rmotor.angle() < 500:
+        robot.rmotor.run(800)
+        robot.lmotor.run(200)
+    robot.stop()
+
 # Main
-def start_robot(corner):
+def start_robot(corner, run):
     """Instacia a classe, começa o desafio."""
     print("Starting...")
 
     triton = Robot(lmport = Port.A, rmport = Port.C, clport = Port.B, amport = Port.D, csport = Port.S1, lcport = Port.S2, rcport = Port.S3, infraport = Port.S4, corner = corner)
-    #Trava a garra no topo
-    triton.catch()
-
     # Tests.
     # test_catch(triton)
     # test_walk(triton)
@@ -260,9 +284,14 @@ def start_robot(corner):
     # test_gyro_walk(triton)
     # test_gyro_turn(triton)
 
-    # get_first(triton)
 
-    get_deliver(triton)
+    #Trava a garra no topo
+    triton.catch()
+    if run == 0:
+        get_first(triton)
+    else:
+        leave_base(triton)
+        get_deliver(triton)
 
     print("Goodbye...")
     wait(1000)
@@ -280,6 +309,7 @@ def main():
         if proc != os.getpid():
             os.kill(proc, signal.SIGTERM)
 
+    run = 0
     while True:
         while not any(brick.buttons()):
             wait(10)
@@ -288,10 +318,12 @@ def main():
         try:
             # Botão do meio -> Começando do lado preto
             if Button.CENTER in buttons:
-                start_robot(const.BLACK_CNR)
+                start_robot(const.BLACK_CNR, run)
+                run+=1
             # Botão de cima -> Começando do lado azul
             elif Button.UP in buttons:
-                start_robot(const.BLUE_CNR)
+                start_robot(const.BLUE_CNR, run)
+                run+=1
             # Botão de baixo -> Sair
             elif Button.DOWN in buttons:
                 break

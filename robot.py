@@ -170,10 +170,18 @@ class Robot:
             print("Going up...")
             self.claw.run_until_stalled(const.CLAWSP_UP, Stop.HOLD, const.CLAW_DTY_LIM)
             self.claw.set_dc_settings(100, 0)
+    
+    def fast_catch(self):
+        self.claw.reset_angle(0)
+        while self.claw.angle() < abs(const.CLAWDG_DN*0.95):
+            self.claw.run(900)
+        self.catch()
 
     def stop(self, stop_type = Stop.BRAKE):
         """Para os motores."""
         print("Stoping...")
+        self.lmotor.run(0)
+        self.rmotor.run(0)
         self.lmotor.stop(stop_type)
         self.rmotor.stop(stop_type)
 
