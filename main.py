@@ -1,5 +1,5 @@
-#!/usr/bin/ pybricks-micropython
-# # -*- coding: utf-8 -*-
+#!/usr/bin/pybricks-micropython
+# -*- coding: utf-8 -*-
 
 """Main module."""
 
@@ -21,12 +21,15 @@ from robot import Robot
 
 
 # Tests TODO: ARQUIVO SEPARADO
+def main_testes(robot):
+    """Main para testes"""
+    robot.turn(aFuncao= const.aCURVA1, bFuncao = const.bCURVA1, cFuncao = const.cCURVA1, grausCurva=90)
+
 def test_catch(robot):
     """Teste da garra."""
     robot.catch()
     wait(1000)
     robot.catch(release=True)
-
 
 def test_walk(robot):
     """Teste de andar em linha reta."""
@@ -81,13 +84,13 @@ def seek_block(robot):
     identificado = False
     while not identificado:
         # print(robot.infra.distance())
-        robot.align(vInicial=200, intervOscilacao=8)
+        robot.align(vInicial=300, intervOscilacao=8)
         motor_angle +=  robot.lmotor.angle()
         robot.resetMotors()
-        while robot.lmotor.angle() < 200:
-            robot.equilib(velocidade=100)
+        while robot.lmotor.angle() < const.SEEK_DG:
+            robot.equilib(velocidade=const.SEEK_SP)
             print(robot.infra.distance())
-            if robot.infra.distance() < 10:
+            if robot.infra.distance() < const.DST_BIGBLOCK:
                 identificado = True
                 robot.stop()
                 break
@@ -97,7 +100,7 @@ def seek_block(robot):
     robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=98)
     robot.stop()
     
-    print("MotorAngle =", motor_angle)
+    # print("MotorAngle =", motor_angle)
     if motor_angle < 400:
         #Parou no primeiro cubo
         return 1
@@ -126,7 +129,7 @@ def get_block(robot):
     """Se aproxima do bloco, le a cor, pega com a garra"""
     robot.resetMotors()
     while robot.central.rgb()[1] < const.GREEN_CLOSE:
-        robot.equilib(velocidade=150, intervOscilacao=8)
+        robot.equilib(velocidade=100, intervOscilacao=8)
     robot.stop()
     rgb = robot.central.rgb()
     robot.walk(cFuncao=-20, graus=const.REV_CATCH, intervOscilacao=8)
@@ -200,6 +203,7 @@ def get_first(robot):
     robot.stop(Stop.HOLD)
     deliver(robot)
     robot.fast_catch()
+    robot.deposit[corLida-1][1] = True
 
 def get_deliver(robot):
     """Pega um cubo do canto e entrega"""
@@ -207,10 +211,21 @@ def get_deliver(robot):
     blocoParada = seek_block(robot)
     corLida = get_block(robot)
     if corLida != const.RED:
-        # TODO: Cacular o tamanho da re baseado nos depositos ocupados
-        
+        # TODO: Calcular o tamanho da re baseado nos depositos ocupados
+
+        cor_idx = corLida -1
+        if robot.corner == const.BLACK:
+            direcao = 1
+        else:
+            direcao = -1
         n_re = 1 #Valor multiplicador para o robo ir de re ate ficar na direcao do deposito
-        robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=n_re*const.BACK_DEPOSIT)
+        for idx in range(len(robot.deposit[cor_idx]))[::direcao]:
+            if not robot.deposit[cor_idx][idx]:
+                break
+            n_re += 1
+        robot.deposit[cor_idx][idx] = True
+        
+        robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=(n_re*const.BACK_DEPOSIT)+300)
         
         if blocoParada == 1:
             if robot.corner == corLida:
@@ -272,29 +287,22 @@ def leave_base(robot):
     robot.stop()
 
 # Main
-def start_robot(corner, run):
-    """Instacia a classe, começa o desafio."""
+def start_robot(robot):
+    """Começa o desafio a partir da base."""
     print("Starting...")
 
-    triton = Robot(lmport = Port.A, rmport = Port.C, clport = Port.B, amport = Port.D, csport = Port.S1, lcport = Port.S2, rcport = Port.S3, infraport = Port.S4, corner = corner)
-    # Tests.
-    # test_catch(triton)
-    # test_walk(triton)
-    # test_turn(triton)
-    # test_gyro_walk(triton)
-    # test_gyro_turn(triton)
-
-
     #Trava a garra no topo
-    triton.catch()
-    if run == 0:
-        get_first(triton)
+    robot.catch()
+    
+    if robot.run == 0:
+        get_first(robot)
     else:
-        leave_base(triton)
-        get_deliver(triton)
+        leave_base(robot)
+        get_deliver(robot)
 
+    robot.run += 1
+    print(robot.deposit)
     print("Goodbye...")
-    wait(1000)
 
 
 def main():
@@ -309,7 +317,10 @@ def main():
         if proc != os.getpid():
             os.kill(proc, signal.SIGTERM)
 
-    run = 0
+    """Instancia o robo, comeca o desafio"""
+    triton = Robot(lmport = Port.A, rmport = Port.C, clport = Port.B, amport = Port.D, csport = Port.S1, lcport = Port.S2, rcport = Port.S3, infraport = Port.S4)
+    
+    
     while True:
         while not any(brick.buttons()):
             wait(10)
@@ -318,15 +329,22 @@ def main():
         try:
             # Botão do meio -> Começando do lado preto
             if Button.CENTER in buttons:
-                start_robot(const.BLACK_CNR, run)
-                run+=1
+                print(">>", triton.run)
+                triton.corner = const.BLACK_CNR
+                start_robot(triton)
             # Botão de cima -> Começando do lado azul
             elif Button.UP in buttons:
-                start_robot(const.BLUE_CNR, run)
-                run+=1
+                print(">>", triton.run)
+                triton.corner = const.BLUE_CNR
+                start_robot(triton)
+            # Botao da esquerda -> Main de testes
+            elif Button.LEFT in buttons:
+                print(">> TESTE")
+                main_testes(triton)
             # Botão de baixo -> Sair
             elif Button.DOWN in buttons:
                 break
+
         except Exception as ecp:
             print("Fatal Error: %s" % ecp)
 

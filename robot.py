@@ -13,7 +13,7 @@ import constants as const
 class Robot:
     """Classe do robo."""
 
-    def __init__(self, lmport, rmport, clport, amport, csport, lcport, rcport, infraport, corner):
+    def __init__(self, lmport, rmport, clport, amport, csport, lcport, rcport, infraport):
         """Inicializa variáveis do robo."""
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
@@ -29,7 +29,8 @@ class Robot:
         self.deposit = [[False]*3, [False]*3]
         self.side = const.LEFT
         self.direction = const.NORTH
-        self.corner = corner
+        self.corner = 0
+        self.run = 0
 
         self.stopwatch = StopWatch()
 
