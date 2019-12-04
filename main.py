@@ -10,7 +10,7 @@ import signal
 
 from pybricks import ev3brick as brick
 from pybricks.parameters import Button, Port, Color, Stop
-from pybricks.tools import print, wait
+from pybricks.tools import print, wait, StopWatch
 
 import constants as const
 from robot import Robot
@@ -23,7 +23,14 @@ from robot import Robot
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
-    robot.turn(aFuncao= const.aCURVA1, bFuncao = const.bCURVA1, cFuncao = const.cCURVA1, grausCurva=90)
+    A = StopWatch()
+    A.reset()
+    # robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_PEQUENO, intervOscilacao=const.intRETA, insideReset=True)
+    robot.stop()
+    robot.resetMotors()
+    robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90, fix=True)
+    robot.stop()
+    print(A.time())
 
 def test_catch(robot):
     """Teste da garra."""
@@ -97,7 +104,7 @@ def seek_block(robot):
     motor_angle += robot.lmotor.angle()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
-    robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-20, grausCurva=98)
+    robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=98)
     robot.stop()
     
     # print("MotorAngle =", motor_angle)
@@ -158,28 +165,28 @@ def get_first(robot):
     # Andar/Alinhar com a base
     robot.align()
 
-    robot.turn(aFuncao=0, bFuncao=-0.5, cFuncao=90, grausCurva=45)
+    robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=45)
     
     # Andar fixo
-    robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=60, graus=570, intervOscilacao=8)
+    robot.walk(aFuncao = const.aRETA, bFuncao = const.bRETA, cFuncao=const.cRETA, graus=570, intervOscilacao=const.intRETA)
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=0, bFuncao=-0.5, cFuncao=80, grausCurva=45)
+    robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=45, fix = False)
     robot.stop()
 
     # Andar fixo
-    robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=60, graus=700, intervOscilacao=8)
+    robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=600, intervOscilacao=const.intRETA)
     robot.stop()
 
     # Andar/Alinhar com a linha do meio
     robot.align(vInicial=300)
     robot.stop()
-    robot.walk(bFuncao = -0.1, cFuncao=30, graus=15, intervOscilacao=8)
+    robot.walk(bFuncao=-0.1, cFuncao=30, graus=15, intervOscilacao=8)
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=0, bFuncao=0.5, cFuncao=-70, grausCurva=90, fix=False)
+    robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90, fix=True)
     robot.stop()
 
     # Andar/Alinha
@@ -193,7 +200,7 @@ def get_first(robot):
     if robot.corner == corLida:
         # Se move pra tras
         robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=60, graus=100, intervOscilacao=8)
-        robot.turn(aFuncao=0, bFuncao=0.5, cFuncao=-80, grausCurva=180, fix = False)
+        robot.turn(aFuncao=0, bFuncao=0.5, cFuncao=-80, grausCurva=180, fix = True)
         robot.align(vInicial=300)
         robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=40, graus=const.MEIO_PEQUENO)
     else:
@@ -225,44 +232,44 @@ def get_deliver(robot):
             n_re += 1
         robot.deposit[cor_idx][idx] = True
         
-        robot.walk(aFuncao=0.04, bFuncao=-4, cFuncao=-5, graus=(n_re*const.BACK_DEPOSIT)+300)
+        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+300)
         
         if blocoParada == 1:
             if robot.corner == corLida:
                 print("CASO 1")
-                robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+                robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(cFuncao=300, graus= const.MEIO_PEQUENO, intervOscilacao=8, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_PEQUENO, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 2")
-                robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+                robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=15, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD) 
         elif blocoParada == 2:
             if robot.corner == corLida:
                 print("CASO 3")
-                robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+                robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=15, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 4")
-                robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+                robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(cFuncao=300, graus= const.MEIO_PEQUENO, intervOscilacao=15, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA,cFuncao=const.cRETA, graus= const.MEIO_PEQUENO, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
         else:
             if robot.corner == corLida:
                 print("CASO 5")
-                robot.turn(aFuncao=0.04, bFuncao=-4, cFuncao=-5, grausCurva=90)
+                robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=300, vPosterior=100)
-                robot.walk(cFuncao=300, graus= const.MEIO_GRANDE, intervOscilacao=15, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 6")
-                robot.turn(aFuncao=-0.04, bFuncao=4, cFuncao=5, grausCurva=90)
+                robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90)
         
         robot.stop(Stop.HOLD)
         deliver(robot)
