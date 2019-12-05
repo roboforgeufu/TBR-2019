@@ -133,7 +133,7 @@ def deliver(robot):
     # VERSAO DE TESTE
     robot.align(vInicial=200)
     robot.stop()
-    robot.catch(release=True)
+    robot.lower_arm(release=True)
     robot.walk(cFuncao=-30, graus=-100)
     robot.stop()
 
@@ -144,12 +144,7 @@ def get_block(robot):
         robot.equilib(velocidade=100, intervOscilacao=8)
     robot.stop()
     rgb = robot.central.rgb()
-    robot.walk(cFuncao=-20, graus=const.REV_CATCH, intervOscilacao=8)
-    robot.stop()
-    robot.catch(release=True)
-    robot.walk(cFuncao=40, graus=const.FWD_CATCH, intervOscilacao=8)
-    robot.stop()
-    robot.catch()
+    robot.lower_arm()
     if rgb[0] > 50:
         return const.RED
     elif rgb[2] > 20:
@@ -304,7 +299,7 @@ def start_robot(robot):
     print("Starting...")
 
     #Trava a garra no topo
-    robot.catch()
+    robot.raise_arm()
     
     if robot.run == 0:
         get_first(robot)

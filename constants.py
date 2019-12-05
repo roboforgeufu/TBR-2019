@@ -3,6 +3,11 @@ from pybricks.parameters import Color
 
 """Constants file."""
 
+# Arm
+LOWARM_SP = -200
+RAISEARM_SP = 200
+TIME_ARM = 1000
+
 # Claw
 CLAWSP_UP = 1000
 CLAWSP_DN = -200
