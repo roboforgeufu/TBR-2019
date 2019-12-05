@@ -146,8 +146,8 @@ class Robot:
                 if (difDir not in range(-3, 4)) or (difEsq not in range(-3, 4)):
                     self.stopwatch.reset()  # Nao comecar a contar <=> resetar constantemente o self.stopwatch
 
-                # print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
-                # print(difDir, difEsq)
+                print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
+                print(difDir, difEsq)
                 # Caso passem 400 ms sem resetar o self.stopwatch, ou seja, 300 ms com ambos os motores na zona segura
                 if self.stopwatch.time() > 300:
                     print("E:", self.lmotor.angle(), "D:", self.rmotor.angle())

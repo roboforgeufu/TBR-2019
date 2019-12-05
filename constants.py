@@ -60,9 +60,13 @@ DST_BIGBLOCK = 20
 # FUNCOES VELOCIDADE CURVA
 
 # Tempo = 650--
-aCURVA90 = -0.016
-bCURVA90 = 1.17
-cCURVA90 = 50
+aT90_R = -0.016
+bT90_R = 1.17
+cT90_R = 50
+
+aT90_L = 0.01
+bT90_L = -0.7
+cT90_L = -50
 
 # Tempo = 620--
 aCURVA45 = -0.008
