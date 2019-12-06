@@ -6,16 +6,15 @@ from pybricks.parameters import Color
 # Claw
 CLAWSP_UP = 1000
 CLAWSP_DN = -200
-CLAWDG_DN = -850
+CLAWDG_DN = -950
 CLAW_DTY_LIM = 30
 
 # Map
-BIG_BLK = 0
-SML_BLK = 1
+SML = -1
+BIG_BLK = 1
 BIG_BLU = 2
-SML_BLU = 3
-RED = 4
-UNK = 5
+RED = 5
+UNK = 0
 
 LEFT = 0
 RIGHT = 1
@@ -32,9 +31,9 @@ MOTOR_SP = 500
 # COLORS
 WHITE_PCT = 70
 BLK_PCT = 35
-RED = 5
 BLACK = 1
 BLUE = 2
+RED = 5
 
 SEEK_SP = 200
 SEEK_DG = 150
@@ -83,3 +82,7 @@ cRETA = 30
 intRETA = 10
 
 
+# SEEK DISTANCES
+SEEK_DST_1 = 400
+SEEK_DST_2 = 800
+SEEK_DST_3 = 1200

@@ -25,7 +25,7 @@ class Robot:
         self.rcolor = ColorSensor(rcport)
         self.infra = InfraredSensor(infraport)
 
-        self.map = [[const.UNK] * 4, [const.UNK] * 4]
+        self.map = [[const.UNK] * 4, [const.UNK] * 4, [const.UNK]]
         self.deposit = [[False]*3, [False]*3]
         self.side = const.LEFT
         self.direction = const.NORTH
@@ -33,6 +33,8 @@ class Robot:
         self.run = 0
 
         self.stopwatch = StopWatch()
+
+        self.seek_distance = [0, 0]
 
     def walk(self, aFuncao=0, bFuncao=0, cFuncao=0, graus=0, intervOscilacao=0, insideReset=True):
         """Anda com o robo."""
@@ -101,11 +103,12 @@ class Robot:
             while True:
                 # Para o motor Esquerdo:
                 difEsq = abs(self.lmotor.angle()) - grausMotor
+                #print("DifEsq >>",difEsq, ">>", self.lmotor.angle(), grausMotor)
                 if abs(difEsq) > 3:
                     # A diferenca eh consideravel
                     if difEsq > 0:
                         # Andou mais do que devia
-                        sinalEsq = -1 * (
+                        sinalEsq = -1 *(
                             self.lmotor.angle() / abs(self.lmotor.angle())
                         )  # Deve se movimentar no sentido contrario ao mov anterior
                     else:
@@ -120,6 +123,7 @@ class Robot:
 
                 # Para o motor Direito:
                 difDir = abs(self.rmotor.angle()) - grausMotor
+                #print("DifDir >>", difDir, ">>", self.rmotor.angle(), grausMotor)
                 if abs(difDir) > 3:
                     # A diferenca eh consideravel
                     if difDir > 0:
@@ -146,8 +150,8 @@ class Robot:
                 if (difDir not in range(-3, 4)) or (difEsq not in range(-3, 4)):
                     self.stopwatch.reset()  # Nao comecar a contar <=> resetar constantemente o self.stopwatch
 
-                print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
-                print(difDir, difEsq)
+                #print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
+                #print(difDir, difEsq)
                 # Caso passem 400 ms sem resetar o self.stopwatch, ou seja, 300 ms com ambos os motores na zona segura
                 if self.stopwatch.time() > 300:
                     print("E:", self.lmotor.angle(), "D:", self.rmotor.angle())
