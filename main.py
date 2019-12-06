@@ -24,8 +24,10 @@ f = open("log.txt", "a")
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
-    robot.catch(release=True)
-    robot.catch()
+    robot.corner = 1
+    leave_base(robot)
+    print(seek_block(robot))
+    print(robot.seek_distance)
 
 def test_catch(robot):
     """Teste da garra."""
@@ -84,7 +86,27 @@ def seek_block(robot):
     f.write("Checking...\n")
     identificado = False
     blocoParada = 0
+
+    if robot.seek_distance[robot.corner -1] > 100:
+        robot.align()
+        robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=robot.seek_distance[robot.corner -1]-200, intervOscilacao=const.intRETA)
+        robot.stop()
     while not identificado:
+        print("Bloco Parada =", blocoParada)
+        print("Infra >>", robot.infra.distance())
+        f.write("STAGE%d\n" % blocoParada)
+        robot.align(vInicial=300, intervOscilacao=8)
+        robot.seek_distance[robot.corner -1] +=  robot.lmotor.angle()
+        robot.resetMotors()
+        while robot.lmotor.angle() < const.SEEK_DG:
+            print("Infra >>", robot.infra.distance())
+            robot.equilib(velocidade=const.SEEK_SP)
+            # print(robot.infra.distance())
+            f.write("InfraRed %d\n" % robot.infra.distance())
+            if robot.infra.distance() < const.DST_BIGBLOCK:
+                identificado = True
+                robot.stop()
+                break
         if robot.seek_distance[robot.corner -1] < const.SEEK_DST_1:
             #Primeiro cubo
             blocoParada = 1
@@ -98,20 +120,7 @@ def seek_block(robot):
             #Quarto cubo
             blocoParada = 4
             print("Nada ainda...")
-        # print(robot.infra.distance())
-        f.write("STAGE%d\n" % blocoParada)
-        robot.align(vInicial=300, intervOscilacao=8)
-        robot.seek_distance[robot.corner -1] +=  robot.lmotor.angle()
-        robot.resetMotors()
-        while robot.lmotor.angle() < const.SEEK_DG:
-            robot.equilib(velocidade=const.SEEK_SP)
-            # print(robot.infra.distance())
-            f.write("InfraRed %d\n" % robot.infra.distance())
-            if robot.infra.distance() < const.DST_BIGBLOCK:
-                identificado = True
-                robot.stop()
-                break
-        
+
     robot.seek_distance[robot.corner -1] += robot.lmotor.angle()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
@@ -175,7 +184,7 @@ def get_first(robot):
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=45)
+    robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=40)
     robot.stop()
 
     # Andar fixo
@@ -224,7 +233,7 @@ def get_deliver(robot):
     if corLida == const.RED:
         """Ignora o vermelho"""
         while robot.lmotor.angle() > -10:
-            robot.equilib(velocidade=-200, intervOscilacao=15)
+            robot.equilib(velocidade=-200, intervOscilacao=6)
         robot.stop()
         robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao= const.cT90_R, grausCurva=90)
         get_deliver(robot)
@@ -296,10 +305,10 @@ def leave_base(robot):
     while robot.lmotor.angle() < 500:
         robot.lmotor.run(800)
         robot.rmotor.run(200)
-    while robot.lmotor.angle() < 570:
+    while robot.lmotor.angle() < 540:
         robot.equilib()
     robot.rmotor.reset_angle(0)
-    while robot.rmotor.angle() < 500:
+    while robot.rmotor.angle() < 530:
         robot.rmotor.run(800)
         robot.lmotor.run(200)
     robot.stop()
@@ -325,19 +334,19 @@ def start_robot(robot):
     f.write("DEPOSITOS\n")
     for depositos in robot.deposit:
         f.write(">>\n")
-        f.writelines(["%s " % item  for item in depositos])
+    #    f.writelines(["%s " % item  for item in depositos])
 
 
     print(robot.map)
     f.write("MAP\n")
     for minimap in robot.map:
         f.write(">>\n")
-        f.writelines(["%s " % item  for item in minimap])
+    #    f.writelines(["%d " % item  for item in minimap])
 
 
     print(robot.seek_distance)
     f.write("SEEK_DISTANCE\n")
-    f.writelines(["%s " % item  for item in robot.seek_distance])
+    #f.writelines(["%d " % item  for item in robot.seek_distance])
     
     print("Goodbye...")
 
