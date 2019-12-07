@@ -30,7 +30,7 @@ class Robot:
         self.side = const.LEFT
         self.direction = const.NORTH
         self.corner = 0
-        self.run = 0
+        self.run = 1
 
         self.stopwatch = StopWatch()
 
@@ -153,7 +153,7 @@ class Robot:
                 #print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
                 #print(difDir, difEsq)
                 # Caso passem 400 ms sem resetar o self.stopwatch, ou seja, 300 ms com ambos os motores na zona segura
-                if self.stopwatch.time() > 300:
+                if self.stopwatch.time() > 100:
                     print("E:", self.lmotor.angle(), "D:", self.rmotor.angle())
                     print(velocEsq, velocDir)
                     print()
@@ -189,6 +189,8 @@ class Robot:
         self.rmotor.run(0)
         self.lmotor.stop(stop_type)
         self.rmotor.stop(stop_type)
+        self.lmotor.run(0)
+        self.rmotor.run(0)
 
     def align(self, color = 0, vInicial = 100, vPosterior = 100, intervOscilacao = 0, sameSide = False):
         """Alinha com uma linha."""

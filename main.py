@@ -24,10 +24,9 @@ f = open("log.txt", "a")
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
-    robot.corner = 1
-    leave_base(robot)
-    print(seek_block(robot))
-    print(robot.seek_distance)
+    n_re = 3
+    robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+500, intervOscilacao=const.intRETA+20)
+    robot.stop()
 
 def test_catch(robot):
     """Teste da garra."""
@@ -88,7 +87,7 @@ def seek_block(robot):
     blocoParada = 0
 
     if robot.seek_distance[robot.corner -1] > 100:
-        robot.align()
+        robot.align(vInicial=300)
         robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=robot.seek_distance[robot.corner -1]-200, intervOscilacao=const.intRETA)
         robot.stop()
     while not identificado:
@@ -124,7 +123,7 @@ def seek_block(robot):
     robot.seek_distance[robot.corner -1] += robot.lmotor.angle()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
-    robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90)
+    robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=95)
     robot.stop()
     
     f.write("SAIDA >> Bloco parada:%d\n" % blocoParada)
@@ -188,7 +187,7 @@ def get_first(robot):
     robot.stop()
 
     # Andar fixo
-    robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=500, intervOscilacao=const.intRETA)
+    robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=400, intervOscilacao=const.intRETA)
     robot.stop()
 
     # Andar/Alinhar com a linha do meio
@@ -250,7 +249,7 @@ def get_deliver(robot):
             n_re += 1
         robot.deposit[cor_idx][idx] = True
         
-        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+300)
+        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+500, intervOscilacao=const.intRETA+10)
         
         if blocoParada == 1:
             if robot.corner == corLida:
@@ -294,7 +293,10 @@ def get_deliver(robot):
                 print("CASO 6")
                 f.write("CASO 6\n")
                 robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao=const.cT90_R, grausCurva=90)
-        
+                while robot.lcolor.color() != const.BLACK or robot.rcolor.color() != const.BLACK:
+                    robot.equilib(velocidade=const.SEEK_SP)
+                robot.stop()
+                robot.walk(cFuncao=-30, graus=-70, intervOscilacao=10)
         robot.stop(Stop.HOLD)
         deliver(robot)
         robot.fast_catch()
