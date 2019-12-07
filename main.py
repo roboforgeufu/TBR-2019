@@ -86,7 +86,7 @@ def seek_block(robot):
 
     if robot.seek_distance[robot.corner -1] > 100:
         robot.align(vInicial=300)
-        robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=robot.seek_distance[robot.corner -1]-200, intervOscilacao=const.intRETA)
+        robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=robot.seek_distance[robot.corner -1]-300, intervOscilacao=const.intRETA)
         robot.stop()
     while not identificado:
         print("Bloco Parada =", blocoParada)
@@ -121,7 +121,7 @@ def seek_block(robot):
     robot.seek_distance[robot.corner -1] += robot.lmotor.angle()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
-    robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=95)
+    robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90)
     robot.stop()
     
     f.write("SAIDA >> Bloco parada:%d\n" % blocoParada)
@@ -247,7 +247,7 @@ def get_deliver(robot):
             n_re += 1
         robot.deposit[cor_idx][idx] = True
         
-        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+500, intervOscilacao=const.intRETA+10)
+        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+430, intervOscilacao=const.intRETA+10)
         
         if blocoParada == 1:
             if robot.corner == corLida:
@@ -262,7 +262,7 @@ def get_deliver(robot):
                 f.write("CASO 2\n")
                 robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao=const.cT90_R, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=0, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD) 
         elif blocoParada == 2:
             if robot.corner == corLida:
@@ -270,7 +270,7 @@ def get_deliver(robot):
                 f.write("CASO 3\n")
                 robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
-                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
+                robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=0, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 4")
@@ -291,7 +291,7 @@ def get_deliver(robot):
                 print("CASO 6")
                 f.write("CASO 6\n")
                 robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao=const.cT90_R, grausCurva=90)
-                while robot.lcolor.color() != const.BLACK or robot.rcolor.color() != const.BLACK:
+                while robot.lcolor.color() not in [1, 7, 0] or robot.rcolor.color() not in [1, 7, 0]:
                     robot.equilib(velocidade=const.SEEK_SP)
                 robot.stop()
                 robot.walk(cFuncao=-30, graus=-70, intervOscilacao=10)
@@ -303,14 +303,16 @@ def leave_base(robot):
     robot.align()
     robot.lmotor.reset_angle(0)
     while robot.lmotor.angle() < 500:
-        robot.lmotor.run(800)
-        robot.rmotor.run(200)
-    while robot.lmotor.angle() < 540:
+        robot.lmotor.run(500)
+        robot.rmotor.run(100)
+    while robot.lmotor.angle() < 500:
         robot.equilib()
     robot.rmotor.reset_angle(0)
-    while robot.rmotor.angle() < 530:
-        robot.rmotor.run(800)
-        robot.lmotor.run(200)
+    while robot.rmotor.angle() < 520:
+        robot.rmotor.run(500)
+        robot.lmotor.run(100)
+    robot.stop()
+    robot.walk(cFuncao=40, graus=100)
     robot.stop()
     robot.resetMotors()
 
