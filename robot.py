@@ -46,7 +46,7 @@ class Robot:
         velocDir = 0
         velocEsq = 0
         while True:
-            # print(self.lmotor.angle(), self.rmotor.angle())
+            print(self.lmotor.angle(), self.rmotor.angle())
             # Funcao que descreve a velocidade em funcao da porcentagem do deslocamento ja realizado
             percDeslocado = (self.lmotor.angle() / graus) * 100
             velocEsq = (aFuncao * (percDeslocado ** 2) + bFuncao * percDeslocado + cFuncao) * 10
@@ -153,7 +153,7 @@ class Robot:
                 #print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
                 #print(difDir, difEsq)
                 # Caso passem 400 ms sem resetar o self.stopwatch, ou seja, 300 ms com ambos os motores na zona segura
-                if self.stopwatch.time() > 100:
+                if self.stopwatch.time() > 80:
                     print("E:", self.lmotor.angle(), "D:", self.rmotor.angle())
                     print(velocEsq, velocDir)
                     print()
@@ -209,7 +209,7 @@ class Robot:
                 # print("E:", self.lcolor.reflection(), "D:", self.rcolor.reflection())
                 # print(lstate, rstate)
                 # print()
-
+                
                 """Estado 0 - Sensor ainda nao identificou a linha"""
                 if rstate == 0 and lstate == 0:
                     # Nesse ponto do codigo, nenhum dos sensores identificou uma linha preta

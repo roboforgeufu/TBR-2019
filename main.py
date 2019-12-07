@@ -24,7 +24,14 @@ f = open("log.txt", "a")
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
-    get_block(robot)
+    # get_block(robot)
+    # robot.catch()
+    # deliver(robot)
+    
+    n_re = 3
+    robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+430, intervOscilacao=-const.intRETA)
+    robot.stop()
+    
 
 def test_catch(robot):
     """Teste da garra."""
@@ -84,7 +91,7 @@ def seek_block(robot):
     identificado = False
     blocoParada = 0
 
-    if robot.seek_distance[robot.corner -1] > 100:
+    if robot.seek_distance[robot.corner -1] > 300:
         robot.align(vInicial=300)
         robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=robot.seek_distance[robot.corner -1]-300, intervOscilacao=const.intRETA)
         robot.stop()
@@ -305,7 +312,7 @@ def leave_base(robot):
     while robot.lmotor.angle() < 500:
         robot.lmotor.run(500)
         robot.rmotor.run(100)
-    while robot.lmotor.angle() < 500:
+    while robot.lmotor.angle() < 530:
         robot.equilib()
     robot.rmotor.reset_angle(0)
     while robot.rmotor.angle() < 520:
@@ -374,7 +381,7 @@ def main():
         buttons = brick.buttons()
         try:
             # Botão do meio -> Começando do lado preto
-            if Button.CENTER in buttons:
+            if Button.DOWN in buttons:
                 print(">>", triton.run)
                 f.write(">>%d\n" % triton.run)
                 triton.corner = const.BLACK_CNR
