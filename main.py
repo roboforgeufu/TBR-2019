@@ -24,6 +24,8 @@ f = open("log.txt", "a")
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
+
+    """
     robot.slide()
 
     robot.catch()
@@ -32,6 +34,9 @@ def main_testes(robot):
     robot.slide()
     robot.catch(release=True)
     robot.slide(up=True)
+    """
+    get_block(robot)
+    robot.catch(release=True)
 
 def test_catch(robot):
     """Teste da garra."""
@@ -162,6 +167,7 @@ def get_block(robot):
     robot.stop()
     robot.slide()
     robot.catch()
+    robot.slide(up=True)
     if rgb[2] > 20:
         f.write("RETURN BLUE\n")
         return const.BLUE
