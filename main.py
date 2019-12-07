@@ -33,8 +33,6 @@ def main_testes(robot):
     robot.catch(release=True)
     robot.slide(up=True)
 
-    
-
 def test_catch(robot):
     """Teste da garra."""
     robot.catch()
@@ -146,6 +144,7 @@ def deliver(robot):
     # VERSAO DE TESTE
     robot.align(vInicial=200)
     robot.stop()
+    robot.slide()
     robot.catch(release=True)
     robot.walk(cFuncao=-30, graus=-100)
     robot.stop()
@@ -161,9 +160,7 @@ def get_block(robot):
         return const.RED
     robot.walk(cFuncao=-20, graus=const.REV_CATCH, intervOscilacao=8)
     robot.stop()
-    robot.catch(release=True)
-    robot.walk(cFuncao=40, graus=const.FWD_CATCH, intervOscilacao=8)
-    robot.stop()
+    robot.slide()
     robot.catch()
     if rgb[2] > 20:
         f.write("RETURN BLUE\n")
@@ -228,7 +225,8 @@ def get_first(robot):
         robot.walk(aFuncao = -0.01, bFuncao = 1, cFuncao=40, graus=const.MEIO_PEQUENO)
     robot.stop(Stop.HOLD)
     deliver(robot)
-    robot.fast_catch()
+    robot.slide(up=True)
+    robot.catch()
     robot.deposit[corLida-1][1] = True
 
 def get_deliver(robot):
@@ -306,7 +304,8 @@ def get_deliver(robot):
                 robot.walk(cFuncao=-30, graus=-70, intervOscilacao=10)
         robot.stop(Stop.HOLD)
         deliver(robot)
-        robot.fast_catch()
+        robot.slide(up=True)
+        robot.catch() 
 
 def leave_base(robot):
     robot.align()
@@ -329,7 +328,7 @@ def start_robot(robot):
     print("Starting...")
 
     #Trava a garra no topo
-    robot.catch()
+    robot.slide(up=True)
     
     if robot.run == 0:
         get_first(robot)

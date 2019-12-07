@@ -161,7 +161,8 @@ class Robot:
     
     def slide(self, up=False):
         if up:
-            self.claw.run_until_stalled(-800)
+            self.claw.run_until_stalled(-500, Stop.HOLD, 40)
+            self.claw.set_dc_settings(100, 0)
         else:
             self.claw.reset_angle(0)
             while self.claw.angle() < 250:
@@ -172,9 +173,9 @@ class Robot:
     def catch(self, release=False):
         """Pega/Solta o bloco."""
         if release:
-            print("Going down...")
+            print("Releasing...")
             self.arm.reset_angle(0)
-            while self.arm.angle() < 1000:
+            while self.arm.angle() < 1300:
                 self.arm.run(800)
             self.arm.run(0)
         else:
