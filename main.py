@@ -24,9 +24,16 @@ f = open("log.txt", "a")
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
-    n_re = 3
-    robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+500, intervOscilacao=const.intRETA+20)
-    robot.stop()
+    robot.slide()
+
+    robot.catch()
+    robot.slide(up=True)
+
+    robot.slide()
+    robot.catch(release=True)
+    robot.slide(up=True)
+
+    
 
 def test_catch(robot):
     """Teste da garra."""

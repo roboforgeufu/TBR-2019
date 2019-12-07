@@ -18,7 +18,7 @@ class Robot:
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
         self.claw = Motor(clport)
-        # self.arm = Motor(amport)
+        self.arm = Motor(amport)
 
         self.central = ColorSensor(csport)
         self.lcolor = ColorSensor(lcport)
@@ -158,23 +158,29 @@ class Robot:
                     print(velocEsq, velocDir)
                     print()
                     break
+    
+    def slide(self, up=False):
+        if up:
+            self.claw.run_until_stalled(-800)
+        else:
+            self.claw.reset_angle(0)
+            while self.claw.angle() < 250:
+                self.claw.run(400)
+            self.claw.run(0)
+
 
     def catch(self, release=False):
         """Pega/Solta o bloco."""
         if release:
             print("Going down...")
-            self.claw.reset_angle(0)
-            while self.claw.angle() > const.CLAWDG_DN:
-                #print(self.claw.angle())
-                if self.claw.angle() > const.CLAWDG_DN/8:
-                    self.claw.run(const.CLAWSP_DN)
-                else:
-                    self.claw.run(const.CLAWSP_DN -900)
-            self.claw.stop(Stop.HOLD)
+            self.arm.reset_angle(0)
+            while self.arm.angle() < 1000:
+                self.arm.run(800)
+            self.arm.run(0)
         else:
-            print("Going up...")
-            self.claw.run_until_stalled(const.CLAWSP_UP, Stop.HOLD, const.CLAW_DTY_LIM)
-            self.claw.set_dc_settings(100, 0)
+            print("Catching...")
+            self.arm.run_until_stalled(-900, Stop.HOLD, 40)
+            self.arm.set_dc_settings(100, 0)
     
     def fast_catch(self):
         self.claw.reset_angle(0)
