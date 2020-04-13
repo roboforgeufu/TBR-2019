@@ -2,7 +2,7 @@
 
 """Robot module."""
 
-from pybricks.ev3devices import Motor, ColorSensor, GyroSensor
+from pybricks.ev3devices import Motor, ColorSensor, GyroSensor, InfraredSensor, UltrasonicSensor
 from pybricks.tools import wait, print, StopWatch
 from pybricks.parameters import Stop
 from pybricks.robotics import DriveBase
@@ -13,26 +13,28 @@ import constants as const
 class Robot:
     """Classe do robo."""
 
-    def __init__(self, lmport, rmport, clport, amport, csport, lcport, rcport, gyport, corner):
+    def __init__(self, lmport, rmport, clport, amport, csport, lcport, rcport, infraport):
         """Inicializa variáveis do robo."""
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
-        # self.claw = Motor(clport)
-        # self.arm = Motor(amport)
+        self.claw = Motor(clport)
+        self.arm = Motor(amport)
 
-        # self.recog = ColorSensor(csport)
+        self.central = ColorSensor(csport)
         self.lcolor = ColorSensor(lcport)
         self.rcolor = ColorSensor(rcport)
-        self.gyro = GyroSensor(gyport)
+        self.infra = InfraredSensor(infraport)
 
-        self.map = [[const.UNK] * 4, [const.UNK] * 4]
+        self.map = [[const.UNK] * 4, [const.UNK] * 4, [const.UNK]]
+        self.deposit = [[False]*3, [False]*3]
         self.side = const.LEFT
         self.direction = const.NORTH
-        self.corner = corner
+        self.corner = 0
+        self.run = 1
 
-        # TODO: Verificar a necessidade
         self.stopwatch = StopWatch()
-        self.base = DriveBase(self.lmotor, self.rmotor, 56, 190)
+
+        self.seek_distance = [0, 0]
 
     def walk(self, aFuncao=0, bFuncao=0, cFuncao=0, graus=0, intervOscilacao=0, insideReset=True):
         """Anda com o robo."""
@@ -78,7 +80,7 @@ class Robot:
 
         # P/ calibrar
         K = const.K
-        grausMotor = K * grausCurva / 90
+        grausMotor = int(K * grausCurva / 90)
 
         mediaPercorrida = 0
         while mediaPercorrida < 99:
@@ -101,11 +103,12 @@ class Robot:
             while True:
                 # Para o motor Esquerdo:
                 difEsq = abs(self.lmotor.angle()) - grausMotor
+                #print("DifEsq >>",difEsq, ">>", self.lmotor.angle(), grausMotor)
                 if abs(difEsq) > 3:
                     # A diferenca eh consideravel
                     if difEsq > 0:
                         # Andou mais do que devia
-                        sinalEsq = -1 * (
+                        sinalEsq = -1 *(
                             self.lmotor.angle() / abs(self.lmotor.angle())
                         )  # Deve se movimentar no sentido contrario ao mov anterior
                     else:
@@ -120,6 +123,7 @@ class Robot:
 
                 # Para o motor Direito:
                 difDir = abs(self.rmotor.angle()) - grausMotor
+                #print("DifDir >>", difDir, ">>", self.rmotor.angle(), grausMotor)
                 if abs(difDir) > 3:
                     # A diferenca eh consideravel
                     if difDir > 0:
@@ -146,35 +150,61 @@ class Robot:
                 if (difDir not in range(-3, 4)) or (difEsq not in range(-3, 4)):
                     self.stopwatch.reset()  # Nao comecar a contar <=> resetar constantemente o self.stopwatch
 
-                # print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
-                # print(difDir, difEsq)
+                #print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
+                #print(difDir, difEsq)
                 # Caso passem 400 ms sem resetar o self.stopwatch, ou seja, 300 ms com ambos os motores na zona segura
-                if self.stopwatch.time() > 300:
+                if self.stopwatch.time() > 100:
                     print("E:", self.lmotor.angle(), "D:", self.rmotor.angle())
-                    print(grausMotor)
+                    print(velocEsq, velocDir)
                     print()
                     break
+    
+    def slide(self, up=False):
+        if up:
+            self.claw.run_until_stalled(-800)
+        else:
+            self.claw.reset_angle(0)
+            while self.claw.angle() < 250:
+                self.claw.run(400)
+            self.claw.run(0)
+
 
     def catch(self, release=False):
         """Pega/Solta o bloco."""
-        print("Catching...")
-        self.claw.run((-1 if release else 1) * const.CLAW_SP)
-        wait(const.CLAW_WT)
-        self.claw.stop()
+        if release:
+            print("Going down...")
+            self.arm.reset_angle(0)
+            while self.arm.angle() < 1000:
+                self.arm.run(800)
+            self.arm.run(0)
+        else:
+            print("Catching...")
+            self.arm.run_until_stalled(-900, Stop.HOLD, 40)
+            self.arm.set_dc_settings(100, 0)
+    
+    def fast_catch(self):
+        self.claw.reset_angle(0)
+        while self.claw.angle() < abs(const.CLAWDG_DN*0.95):
+            self.claw.run(900)
+        self.catch()
 
-    def stop(self):
+    def stop(self, stop_type = Stop.BRAKE):
         """Para os motores."""
         print("Stoping...")
-        self.lmotor.stop(Stop.BRAKE)
-        self.rmotor.stop(Stop.BRAKE)
+        self.lmotor.run(0)
+        self.rmotor.run(0)
+        self.lmotor.stop(stop_type)
+        self.rmotor.stop(stop_type)
+        self.lmotor.run(0)
+        self.rmotor.run(0)
 
-    def check_block(self):
-        """Verifica um bloco. Tamanho e cor."""
-        # TODO: TESTAR COM O BRAÇO
-        pass
-
-    def align(self, color = 0, velocidade = 100, intervOscilacao = 0, sameSide = False):
+    def align(self, color = 0, vInicial = 100, vPosterior = 100, intervOscilacao = 0, sameSide = False):
         """Alinha com uma linha."""
+        print("Aligning...")
+        self.lmotor.reset_angle(0)
+        self.rmotor.reset_angle(0)
+        self.lmotor.set_dc_settings(100, 0)
+        self.rmotor.set_dc_settings(100, 0)
         if color == 0:
             # Alinha na linha preta
             lstate = 0
@@ -182,15 +212,16 @@ class Robot:
             boolDir = True
             boolEsq = True
             while not(lstate == 2 and rstate == 2 and self.lmotor.speed() == 0 and self.rmotor.speed() == 0):
-                #print("E:", self.lcolor.reflection() - const.BLK_PCT, "D:", self.rcolor.reflection() - const.BLK_PCT)
-                print(rstate, lstate)
+                # print("E:", self.lcolor.reflection(), "D:", self.rcolor.reflection())
+                # print(lstate, rstate)
+                # print()
 
                 """Estado 0 - Sensor ainda nao identificou a linha"""
                 if rstate == 0 and lstate == 0:
                     # Nesse ponto do codigo, nenhum dos sensores identificou uma linha preta
                     # O robo continua andando, equilibrando os dois motores para manter a linha reta
                     # e sempre verificando os dois sensores
-                    velocDir = velocEsq = velocidade
+                    velocDir = velocEsq = vInicial
                     # Teto
                     if velocEsq > 900:
                         velocEsq = 900
@@ -207,6 +238,8 @@ class Robot:
                             # self.rmotor andou mais, joga mais velocidade no self.lmotor
                             velocEsq = velocEsq * (1 + (intervOscilacao / 100))
                             velocDir = velocDir * (1 - (intervOscilacao / 100))
+                    if self.rcolor.reflection() < const.BLK_PCT and self.lcolor.reflection() < const.BLK_PCT:
+                        rstate = lstate = 1 
                     if self.rcolor.reflection() < const.BLK_PCT:
                         rstate = 1
                     if self.lcolor.reflection() < const.BLK_PCT:
@@ -215,12 +248,12 @@ class Robot:
                     self.rmotor.run(velocDir)
                 elif rstate == 0:
                     # Apenas o sensor esquerdo ainda nao viu a linha preta
-                    self.rmotor.run(velocidade)
+                    self.rmotor.run(vInicial)
                     if self.rcolor.reflection() < const.BLK_PCT:
                         rstate = 1
                 elif lstate == 0:
-                    self.lmotor.run(velocidade)
                     # Apenas o sensor direito ainda nao viu a linha preta
+                    self.lmotor.run(vInicial)
                     if self.lcolor.reflection() < const.BLK_PCT:
                         lstate = 1
                 
@@ -230,15 +263,19 @@ class Robot:
                 if (lstate == 1 or rstate == 1) and sameSide:
                     self.lmotor.reset_angle(0)
                     while abs(self.lmotor.angle()) < 100:
-                        self.lmotor.run(-velocidade/2)
-                        self.rmotor.run(-velocidade/2)
+                        self.lmotor.run(-vInicial/2)
+                        self.rmotor.run(-vInicial/2)
                     self.lmotor.stop(Stop.HOLD)
                     self.rmotor.stop(Stop.HOLD)
                     lstate = 2
                     rstate = 2
                 elif(lstate == 1):
+                    self.lmotor.stop(Stop.BRAKE)
+                    velocEsq = vPosterior
                     lstate = 2
                 elif(rstate == 1):
+                    self.rmotor.stop(Stop.BRAKE)
+                    velocDir = vPosterior
                     rstate = 2
 
                 """Estado 2 - Termina o alinhamento"""
@@ -251,7 +288,7 @@ class Robot:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
                         if boolEsq:
                             boolEsq = False
-                            velocEsq = velocEsq/2
+                            velocEsq = velocEsq*0.75
                         self.lmotor.run(multiplicador*velocEsq)
                     elif self.lcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
@@ -266,7 +303,7 @@ class Robot:
                         # Se o sensor ja passou pelo preto, mas atualmente ve branco
                         if boolDir:
                             boolDir = False
-                            velocDir = velocDir/2
+                            velocDir = velocDir*0.75
                         self.rmotor.run(multiplicador*velocDir)
                     elif self.rcolor.reflection() < const.BLK_PCT - 10:
                         # Se o sensor ja passou pelo preto, mas atualmente ve muito preto
@@ -276,6 +313,7 @@ class Robot:
                         #Perfeitamente na borda
                         boolDir = True
                         self.rmotor.stop(Stop.HOLD)
+            self.stop(Stop.HOLD)
 
         else:
             # Alinha na linha da cor dada
@@ -284,3 +322,29 @@ class Robot:
                     self.lmotor.stop(Stop.HOLD)
                 if self.rcolor.color() == color:
                     self.rmotor.stop(Stop.HOLD)
+    
+    def equilib(self, velocidade = 500, intervOscilacao = 8):
+        # print("Equilibrando...")
+        velocDir = velocEsq = velocidade
+        # Teto
+        if velocEsq > 900:
+            velocEsq = 900
+        if velocDir > 900:
+            velocDir = 900
+        diferenca_EsqDir = abs(self.lmotor.angle()) - abs(self.rmotor.angle())
+        # print("Diferenca", diferenca_EsqDir)
+        if abs(diferenca_EsqDir) > 3:
+            if diferenca_EsqDir > 0:
+                # self.lmotor andou mais, joga mais velocidade no self.rmotor
+                velocEsq = velocEsq * (1 - (intervOscilacao / 100))
+                velocDir = velocDir * (1 + (intervOscilacao / 100))
+            else:
+                # self.rmotor andou mais, joga mais velocidade no self.lmotor
+                velocEsq = velocEsq * (1 + (intervOscilacao / 100))
+                velocDir = velocDir * (1 - (intervOscilacao / 100))
+        self.lmotor.run(velocEsq)
+        self.rmotor.run(velocDir)
+    
+    def resetMotors(self):
+        self.lmotor.reset_angle(0)
+        self.rmotor.reset_angle(0)
