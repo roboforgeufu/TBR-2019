@@ -1,3 +1,6 @@
+<<<<<<< HEAD:robo2/robot.py
+# -*- coding: utf-8 -*-
+
 """Robot module."""
 
 from pybricks.ev3devices import Motor, ColorSensor, GyroSensor, InfraredSensor, UltrasonicSensor
@@ -16,23 +19,21 @@ class Robot:
         self.lmotor = Motor(lmport)
         self.rmotor = Motor(rmport)
         self.claw = Motor(clport)
-        self.arm = Motor(amport)
+        # self.arm = Motor(amport)
 
         self.central = ColorSensor(csport)
         self.lcolor = ColorSensor(lcport)
         self.rcolor = ColorSensor(rcport)
         self.infra = InfraredSensor(infraport)
 
-        self.map = [[const.UNK] * 4, [const.UNK] * 4, [const.UNK]]
+        self.map = [[const.UNK] * 4, [const.UNK] * 4]
         self.deposit = [[False]*3, [False]*3]
         self.side = const.LEFT
         self.direction = const.NORTH
         self.corner = 0
-        self.run = 1
+        self.run = 0
 
         self.stopwatch = StopWatch()
-
-        self.seek_distance = [0, 0]
 
     def walk(self, aFuncao=0, bFuncao=0, cFuncao=0, graus=0, intervOscilacao=0, insideReset=True):
         """Anda com o robo."""
@@ -101,12 +102,11 @@ class Robot:
             while True:
                 # Para o motor Esquerdo:
                 difEsq = abs(self.lmotor.angle()) - grausMotor
-                #print("DifEsq >>",difEsq, ">>", self.lmotor.angle(), grausMotor)
                 if abs(difEsq) > 3:
                     # A diferenca eh consideravel
                     if difEsq > 0:
                         # Andou mais do que devia
-                        sinalEsq = -1 *(
+                        sinalEsq = -1 * (
                             self.lmotor.angle() / abs(self.lmotor.angle())
                         )  # Deve se movimentar no sentido contrario ao mov anterior
                     else:
@@ -121,7 +121,6 @@ class Robot:
 
                 # Para o motor Direito:
                 difDir = abs(self.rmotor.angle()) - grausMotor
-                #print("DifDir >>", difDir, ">>", self.rmotor.angle(), grausMotor)
                 if abs(difDir) > 3:
                     # A diferenca eh consideravel
                     if difDir > 0:
@@ -148,37 +147,31 @@ class Robot:
                 if (difDir not in range(-3, 4)) or (difEsq not in range(-3, 4)):
                     self.stopwatch.reset()  # Nao comecar a contar <=> resetar constantemente o self.stopwatch
 
-                #print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
-                #print(difDir, difEsq)
+                # print("Tempo:", self.stopwatch.time(), "\ Vel:", velocDir, velocEsq)
+                # print(difDir, difEsq)
                 # Caso passem 400 ms sem resetar o self.stopwatch, ou seja, 300 ms com ambos os motores na zona segura
-                if self.stopwatch.time() > 100:
+                if self.stopwatch.time() > 300:
                     print("E:", self.lmotor.angle(), "D:", self.rmotor.angle())
                     print(velocEsq, velocDir)
                     print()
                     break
-    
-    def slide(self, up=False):
-        if up:
-            self.claw.run_until_stalled(-800)
-        else:
-            self.claw.reset_angle(0)
-            while self.claw.angle() < 250:
-                self.claw.run(400)
-            self.claw.run(0)
-
 
     def catch(self, release=False):
         """Pega/Solta o bloco."""
         if release:
             print("Going down...")
-            self.arm.reset_angle(0)
-            while self.arm.angle() < 1000:
-                self.arm.run(800)
-            self.arm.run(0)
+            self.claw.reset_angle(0)
+            while self.claw.angle() > const.CLAWDG_DN:
+                #print(self.claw.angle())
+                if self.claw.angle() > const.CLAWDG_DN/8:
+                    self.claw.run(const.CLAWSP_DN)
+                else:
+                    self.claw.run(const.CLAWSP_DN -900)
+            self.claw.stop(Stop.HOLD)
         else:
-            print("Catching...")
-            self.arm.run_until_stalled(-900, Stop.HOLD, 40)
-            self.arm.set_dc_settings(100, 0)
+            print("Going up...")
+            self.claw.run_until_stalled(const.CLAWSP_UP, Stop.HOLD, const.CLAW_DTY_LIM)
+            self.claw.set_dc_settings(100, 0)
     
     def fast_catch(self):
         self.claw.reset_angle(0)
@@ -193,8 +186,6 @@ class Robot:
         self.rmotor.run(0)
         self.lmotor.stop(stop_type)
         self.rmotor.stop(stop_type)
-        self.lmotor.run(0)
-        self.rmotor.run(0)
 
     def align(self, color = 0, vInicial = 100, vPosterior = 100, intervOscilacao = 0, sameSide = False):
         """Alinha com uma linha."""
@@ -345,5 +336,5 @@ class Robot:
     
     def resetMotors(self):
         self.lmotor.reset_angle(0)
->>>>>>> master:robot.py
-        self.rmotor.reset_angle(0)
+=======
+-*- coding: utf-8 -*-
