@@ -15,25 +15,27 @@ from pybricks.tools import print, wait, StopWatch
 import constants as const
 from robot import Robot
 
-f = open("log.txt", "a")
 
 # Utils
 # TODO: ARTHUR FAZER CONVERSÃO GRAUS -> CM
+
+'''
+def bateria():
+    if brick.battery.voltage() < 7500:
+        brick.sound.beep()'''
 
 
 # Tests TODO: ARQUIVO SEPARADO
 def main_testes(robot):
     """Main para testes"""
-    robot.slide()
-
-    robot.catch()
-    robot.slide(up=True)
-
-    robot.slide()
-    robot.catch(release=True)
-    robot.slide(up=True)
-
-    
+    A = StopWatch()
+    A.reset()
+    # robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_PEQUENO, intervOscilacao=const.intRETA, insideReset=True)
+    robot.stop()
+    robot.resetMotors()
+    robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90, fix=True)
+    robot.stop()
+    print(A.time())
 
 def test_catch(robot):
     """Teste da garra."""
@@ -89,52 +91,37 @@ def test_gyro_turn(robot):
 def seek_block(robot):
     """Segue em linha reta até perceber a presença de um bloco grande."""
     print("Checking...")
-    f.write("Checking...\n")
+    motor_angle = 0
+    robot.resetMotors()
     identificado = False
-    blocoParada = 0
-
-    if robot.seek_distance[robot.corner -1] > 100:
-        robot.align(vInicial=300)
-        robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=robot.seek_distance[robot.corner -1]-200, intervOscilacao=const.intRETA)
-        robot.stop()
     while not identificado:
-        print("Bloco Parada =", blocoParada)
-        print("Infra >>", robot.infra.distance())
-        f.write("STAGE%d\n" % blocoParada)
+        # print(robot.infra.distance())
         robot.align(vInicial=300, intervOscilacao=8)
-        robot.seek_distance[robot.corner -1] +=  robot.lmotor.angle()
+        motor_angle +=  robot.lmotor.angle()
         robot.resetMotors()
         while robot.lmotor.angle() < const.SEEK_DG:
-            print("Infra >>", robot.infra.distance())
             robot.equilib(velocidade=const.SEEK_SP)
-            # print(robot.infra.distance())
-            f.write("InfraRed %d\n" % robot.infra.distance())
+            print(robot.infra.distance())
             if robot.infra.distance() < const.DST_BIGBLOCK:
                 identificado = True
                 robot.stop()
                 break
-        if robot.seek_distance[robot.corner -1] < const.SEEK_DST_1:
-            #Primeiro cubo
-            blocoParada = 1
-        elif robot.seek_distance[robot.corner -1] < const.SEEK_DST_2:
-            #Segundo cubo
-            blocoParada = 2
-        elif robot.seek_distance[robot.corner -1] < const.SEEK_DST_3:
-            #Terceiro cubo
-            blocoParada = 3
-        else:
-            #Quarto cubo
-            blocoParada = 4
-            print("Nada ainda...")
-
-    robot.seek_distance[robot.corner -1] += robot.lmotor.angle()
+    motor_angle += robot.lmotor.angle()
     robot.walk(cFuncao=-20, graus=const.BCK_SEEN, intervOscilacao=8)
     robot.stop()
-    robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=95)
+    robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=98)
     robot.stop()
     
-    f.write("SAIDA >> Bloco parada:%d\n" % blocoParada)
-    return blocoParada
+    # print("MotorAngle =", motor_angle)
+    if motor_angle < 400:
+        #Parou no primeiro cubo
+        return 1
+    elif motor_angle < 800:
+        #Parou no segundo cubo
+        return 2
+    else:
+        #Parou no terceiro cubo
+        return 3
 
 def change_sides():
     """Atravessa o campo."""
@@ -157,19 +144,17 @@ def get_block(robot):
         robot.equilib(velocidade=100, intervOscilacao=8)
     robot.stop()
     rgb = robot.central.rgb()
-    if rgb[0] > 50:
-        return const.RED
     robot.walk(cFuncao=-20, graus=const.REV_CATCH, intervOscilacao=8)
     robot.stop()
     robot.catch(release=True)
     robot.walk(cFuncao=40, graus=const.FWD_CATCH, intervOscilacao=8)
     robot.stop()
     robot.catch()
-    if rgb[2] > 20:
-        f.write("RETURN BLUE\n")
+    if rgb[0] > 50:
+        return const.RED
+    elif rgb[2] > 20:
         return const.BLUE
     else:
-        f.write("RETURN BLUE\n")
         return const.BLACK
 
 def goto_base():
@@ -180,31 +165,33 @@ def goto_base():
 
 def get_first(robot):
     """Função inicial. Coleta o primeiro bloco no centro do campo."""
+    # TODO: Melhorar funcoes das linhas retas e das curvas
+
     # Andar/Alinhar com a base
     robot.align()
 
     robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=45)
     
     # Andar fixo
-    robot.walk(aFuncao = const.aRETA, bFuncao = const.bRETA, cFuncao=const.cRETA, graus=650, intervOscilacao=const.intRETA)
+    robot.walk(aFuncao = const.aRETA, bFuncao = const.bRETA, cFuncao=const.cRETA, graus=570, intervOscilacao=const.intRETA)
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=40)
+    robot.turn(aFuncao=const.aCURVA45, bFuncao=const.bCURVA45, cFuncao=const.cCURVA45, grausCurva=45, fix = False)
     robot.stop()
 
     # Andar fixo
-    robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=400, intervOscilacao=const.intRETA)
+    robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus=600, intervOscilacao=const.intRETA)
     robot.stop()
 
     # Andar/Alinhar com a linha do meio
     robot.align(vInicial=300)
     robot.stop()
-    robot.walk(bFuncao=-0.1, cFuncao=30, graus=35, intervOscilacao=8)
+    robot.walk(bFuncao=-0.1, cFuncao=30, graus=15, intervOscilacao=8)
     robot.stop()
 
     # Curva
-    robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90, fix=True)
+    robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90, fix=True)
     robot.stop()
 
     # Andar/Alinha
@@ -213,7 +200,6 @@ def get_first(robot):
 
     #Pega o bloco
     corLida = get_block(robot)
-    robot.map[2][0] = corLida
 
     # Entrega
     if robot.corner == corLida:
@@ -233,17 +219,12 @@ def get_first(robot):
 
 def get_deliver(robot):
     """Pega um cubo do canto e entrega"""
+
     blocoParada = seek_block(robot)
     corLida = get_block(robot)
-    robot.map[robot.corner -1][blocoParada -1] = corLida
-    if corLida == const.RED:
-        """Ignora o vermelho"""
-        while robot.lmotor.angle() > -10:
-            robot.equilib(velocidade=-200, intervOscilacao=6)
-        robot.stop()
-        robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao= const.cT90_R, grausCurva=90)
-        get_deliver(robot)
-    else:
+    if corLida != const.RED:
+        # TODO: Calcular o tamanho da re baseado nos depositos ocupados
+
         cor_idx = corLida -1
         if robot.corner == const.BLACK:
             direcao = 1
@@ -256,57 +237,52 @@ def get_deliver(robot):
             n_re += 1
         robot.deposit[cor_idx][idx] = True
         
-        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+500, intervOscilacao=const.intRETA+10)
+        robot.walk(aFuncao=-const.aRETA, bFuncao=-const.bRETA, cFuncao=-const.cRETA, graus=(n_re*const.BACK_DEPOSIT)+300)
         
         if blocoParada == 1:
             if robot.corner == corLida:
                 print("CASO 1")
-                f.write("CASO 1\n")
-                robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90)
+                robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
                 robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_PEQUENO, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 2")
-                f.write("CASO 2\n")
-                robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao=const.cT90_R, grausCurva=90)
+                robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
                 robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD) 
         elif blocoParada == 2:
             if robot.corner == corLida:
                 print("CASO 3")
-                f.write("CASO 3\n")
-                robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90)
+                robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
                 robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 4")
-                f.write("CASO 4\n")
-                robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao=const.cT90_R, grausCurva=90)
+                robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=-300, vPosterior=-100)
                 robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA,cFuncao=const.cRETA, graus= const.MEIO_PEQUENO, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
         else:
             if robot.corner == corLida:
                 print("CASO 5")
-                f.write("CASO 5\n")
-                robot.turn(aFuncao=const.aT90_L, bFuncao=const.bT90_L, cFuncao=const.cT90_L, grausCurva=90)
+                robot.turn(aFuncao=-const.aCURVA90, bFuncao=-const.bCURVA90, cFuncao=-const.cCURVA90, grausCurva=90)
                 robot.align(vInicial=300, vPosterior=100)
                 robot.walk(aFuncao=const.aRETA, bFuncao=const.bRETA, cFuncao=const.cRETA, graus= const.MEIO_GRANDE, intervOscilacao=const.intRETA, insideReset=True)
                 robot.stop(stop_type=Stop.HOLD)
             else:
                 print("CASO 6")
-                f.write("CASO 6\n")
-                robot.turn(aFuncao=const.aT90_R, bFuncao=const.bT90_R, cFuncao=const.cT90_R, grausCurva=90)
-                while robot.lcolor.color() != const.BLACK or robot.rcolor.color() != const.BLACK:
-                    robot.equilib(velocidade=const.SEEK_SP)
-                robot.stop()
-                robot.walk(cFuncao=-30, graus=-70, intervOscilacao=10)
+                robot.turn(aFuncao=const.aCURVA90, bFuncao=const.bCURVA90, cFuncao=const.cCURVA90, grausCurva=90)
+        
         robot.stop(Stop.HOLD)
         deliver(robot)
         robot.fast_catch()
+
+    else:
+        #TODO: implementar entrega do vermelho
+        print("Nada ainda...")
 
 def leave_base(robot):
     robot.align()
@@ -314,14 +290,13 @@ def leave_base(robot):
     while robot.lmotor.angle() < 500:
         robot.lmotor.run(800)
         robot.rmotor.run(200)
-    while robot.lmotor.angle() < 540:
+    while robot.lmotor.angle() < 550:
         robot.equilib()
     robot.rmotor.reset_angle(0)
-    while robot.rmotor.angle() < 530:
+    while robot.rmotor.angle() < 500:
         robot.rmotor.run(800)
         robot.lmotor.run(200)
     robot.stop()
-    robot.resetMotors()
 
 # Main
 def start_robot(robot):
@@ -338,26 +313,9 @@ def start_robot(robot):
         get_deliver(robot)
 
     robot.run += 1
-
     print(robot.deposit)
-    f.write("DEPOSITOS\n")
-    for depositos in robot.deposit:
-        f.write(">>\n")
-    #    f.writelines(["%s " % item  for item in depositos])
-
-
-    print(robot.map)
-    f.write("MAP\n")
-    for minimap in robot.map:
-        f.write(">>\n")
-    #    f.writelines(["%d " % item  for item in minimap])
-
-
-    print(robot.seek_distance)
-    f.write("SEEK_DISTANCE\n")
-    #f.writelines(["%d " % item  for item in robot.seek_distance])
-    
     print("Goodbye...")
+
 
 def main():
     """Função main."""
@@ -374,6 +332,7 @@ def main():
     """Instancia o robo, comeca o desafio"""
     triton = Robot(lmport = Port.A, rmport = Port.C, clport = Port.B, amport = Port.D, csport = Port.S1, lcport = Port.S2, rcport = Port.S3, infraport = Port.S4)
     
+    
     while True:
         while not any(brick.buttons()):
             wait(10)
@@ -383,19 +342,16 @@ def main():
             # Botão do meio -> Começando do lado preto
             if Button.CENTER in buttons:
                 print(">>", triton.run)
-                f.write(">>%d\n" % triton.run)
                 triton.corner = const.BLACK_CNR
                 start_robot(triton)
             # Botão de cima -> Começando do lado azul
             elif Button.UP in buttons:
                 print(">>", triton.run)
-                f.write(">>%d\n" % triton.run)
                 triton.corner = const.BLUE_CNR
                 start_robot(triton)
             # Botao da esquerda -> Main de testes
             elif Button.LEFT in buttons:
                 print(">> TESTE")
-                f.write(">>%d\n" % triton.run)
                 main_testes(triton)
             # Botão de baixo -> Sair
             elif Button.DOWN in buttons:
@@ -403,10 +359,7 @@ def main():
 
         except Exception as ecp:
             print("Fatal Error: %s" % ecp)
-            f.write("Fatal Error: %s\n" % ecp)
 
 
 if __name__ == "__main__":
     main()
-
-f.close()

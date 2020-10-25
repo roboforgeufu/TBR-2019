@@ -3,18 +3,24 @@ from pybricks.parameters import Color
 
 """Constants file."""
 
+# Arm
+LOWARM_SP = -200
+RAISEARM_SP = 200
+TIME_ARM = 1000
+
 # Claw
 CLAWSP_UP = 1000
 CLAWSP_DN = -200
-CLAWDG_DN = -950
+CLAWDG_DN = -850
 CLAW_DTY_LIM = 30
 
 # Map
-SML = -1
-BIG_BLK = 1
+BIG_BLK = 0
+SML_BLK = 1
 BIG_BLU = 2
-RED = 5
-UNK = 0
+SML_BLU = 3
+RED = 4
+UNK = 5
 
 LEFT = 0
 RIGHT = 1
@@ -31,9 +37,9 @@ MOTOR_SP = 500
 # COLORS
 WHITE_PCT = 70
 BLK_PCT = 35
+RED = 5
 BLACK = 1
 BLUE = 2
-RED = 5
 
 SEEK_SP = 200
 SEEK_DG = 150
@@ -54,18 +60,14 @@ MEIO_PEQUENO = 600
 BACK_DEPOSIT = -650
 
 #INFRA
-DST_BIGBLOCK = 15
+DST_BIGBLOCK = 20
 
 # FUNCOES VELOCIDADE CURVA
 
 # Tempo = 650--
-aT90_R = -0.016
-bT90_R = 1.17
-cT90_R = 50
-
-aT90_L = 0.01
-bT90_L = -0.7
-cT90_L = -50
+aCURVA90 = -0.016
+bCURVA90 = 1.17
+cCURVA90 = 50
 
 # Tempo = 620--
 aCURVA45 = -0.008
@@ -82,7 +84,3 @@ cRETA = 30
 intRETA = 10
 
 
-# SEEK DISTANCES
-SEEK_DST_1 = 500
-SEEK_DST_2 = 960
-SEEK_DST_3 = 1300
